@@ -1,0 +1,16 @@
+{
+  "name": "fx-macro-research-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Macroeconomic News & FX H1 Post-Release Research Workstation",
+  "scripts": {
+    "dev": "npm run dev --prefix lab",
+    "dev:server": "npm run dev:server --prefix lab",
+    "dev:web": "npm run dev:web --prefix lab",
+    "build": "npm run build --prefix lab",
+    "build:server": "npm run build:server --prefix lab",
+    "build:web": "npm run build:web --prefix lab",
+    "test": "npm run test --prefix lab",
+    "ingest": "npm run ingest --prefix lab"
+  }
+}

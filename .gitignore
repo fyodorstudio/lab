@@ -1,0 +1,10 @@
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+generated-cache/
+**/generated-cache/
+exports/
+**/exports/
+*.log
+.DS_Store

@@ -1,0 +1,34 @@
+{
+  "name": "fx-macro-research-lab",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Macroeconomic News & FX H1 Post-Release Research Workstation",
+  "main": "dist/server/server.js",
+  "scripts": {
+    "ingest": "tsx src/cli/ingest.ts",
+    "index": "tsx src/cli/ingest.ts",
+    "server": "tsx src/server/server.ts",
+    "dev:server": "tsx watch src/server/server.ts",
+    "dev:web": "npm run dev --prefix web",
+    "dev": "concurrently -n \"server,web\" -c \"cyan,magenta\" \"npm run dev:server\" \"npm run dev:web\"",
+    "dev:single": "tsx src/server/server.ts",
+    "build:server": "tsc -p tsconfig.json",
+    "build:web": "npm run build --prefix web",
+    "build": "npm run build:server && npm run build:web",
+    "start": "node dist/server/server.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.2",
+    "concurrently": "^9.2.4",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
