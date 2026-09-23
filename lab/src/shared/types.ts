@@ -61,11 +61,28 @@ export interface ParsedEventRelease {
   unit?: string;
 }
 
+export type ScoringMode = 'retrospective' | 'walkForward';
+
 export interface EventObservation extends ParsedEventRelease {
   surpriseScore: EventScore;
   momentumScore: EventScore;
-  surprisePercentileRank: number | null; // e.g. 96.4 for P96.4
-  momentumPercentileRank: number | null; // e.g. 82.1 for P82.1
+  surprisePercentileRank: number | null; // strict-lower empirical percentile e.g. 70.0 for P70.0 (or null if exact match)
+  momentumPercentileRank: number | null;
+  scoringMode?: ScoringMode;
+  priorSurpriseN?: number;
+  priorMomentumN?: number;
+  surpriseTieCount?: number;
+  surpriseTieRate?: number;
+  surpriseLowerRank?: number | null;
+  surpriseUpperRank?: number | null;
+  momentumTieCount?: number;
+  momentumTieRate?: number;
+  momentumLowerRank?: number | null;
+  momentumUpperRank?: number | null;
+  surpriseThresholdUsed?: number | null;
+  momentumThresholdUsed?: number | null;
+  surpriseScoreReason?: string;
+  momentumScoreReason?: string;
 
   pair: string;
   eventCurrencyPosition: 'base' | 'quote';
@@ -73,8 +90,9 @@ export interface EventObservation extends ParsedEventRelease {
 
   p0Timestamp: number | null;
   p0: number | null;
-  returns: Array<number | null>; // H1 to H42 returns (normalized)
-  rawReturns: Array<number | null>; // raw pair returns
+  returns: Array<number | null>; // H1 to H42 returns (exact event-currency simple returns: Pt/P0-1 if base, P0/Pt-1 if quote)
+  logReturns: Array<number | null>; // H1 to H42 normalized symmetric log returns: Q * ln(Pt/P0)
+  rawReturns: Array<number | null>; // raw pair arithmetic returns: Pt/P0 - 1
 
   crossesWeekend: boolean;
   isFridayRelease: boolean;
@@ -170,6 +188,8 @@ export interface PatternQueryFilters {
   eventName: string;
   pair?: string;
   horizon?: number; // Selected horizon for score matrix (default 1)
+  scoringMode?: ScoringMode; // default 'retrospective'
+  minHistory?: number; // default 20 for walk-forward
   surpriseScore?: EventScore | 'all';
   momentumScore?: EventScore | 'all';
   importance?: string;
@@ -197,6 +217,8 @@ export interface ResearchHealth {
   dataResolution: string;
   p0AlignmentRule: string;
   thresholdPercentile: number;
+  scoringMode: ScoringMode;
+  minHistory?: number;
   retrospectiveClassificationWarning: string;
   warnings: string[];
 }
@@ -214,6 +236,7 @@ export interface PatternResponse {
     momentumScore: EventScore;
     p0: number | null;
     returns: Array<number | null>;
+    logReturns?: Array<number | null>;
   }>;
   totalMatchingPaths: number;
   scoreMatrix: ScoreMatrixData;

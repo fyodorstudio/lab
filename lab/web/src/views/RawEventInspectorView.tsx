@@ -18,6 +18,8 @@ export const RawEventInspectorView: React.FC<RawEventInspectorViewProps> = ({
   const [valueId, setValueId] = useState(initialValueId);
   const [pair, setPair] = useState(initialPair);
   const [percentile, setPercentile] = useState(75);
+  const [scoringMode, setScoringMode] = useState<'retrospective' | 'walkForward'>('retrospective');
+  const [minHistory, setMinHistory] = useState<number>(20);
 
   const [auditData, setAuditData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -27,7 +29,7 @@ export const RawEventInspectorView: React.FC<RawEventInspectorViewProps> = ({
     if (!eventId) return;
     setLoading(true);
     setError(null);
-    fetchInspect(eventId, valueId, pair, percentile)
+    fetchInspect(eventId, valueId, pair, percentile, scoringMode, minHistory)
       .then(setAuditData)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -35,7 +37,7 @@ export const RawEventInspectorView: React.FC<RawEventInspectorViewProps> = ({
 
   useEffect(() => {
     runAudit();
-  }, [initialEventId, initialValueId, initialPair]);
+  }, [initialEventId, initialValueId, initialPair, scoringMode]);
 
   return (
     <div className="space-y-6">
@@ -45,7 +47,7 @@ export const RawEventInspectorView: React.FC<RawEventInspectorViewProps> = ({
           <span>Forensic Raw Event &amp; Math Audit Inspector</span>
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-1">
-          Inspect and verify mathematical derivations and percentile classifications directly against underlying raw CSV records
+          Inspect and verify mathematical derivations, walk-forward thresholds, and strict-lower percentile ranks directly against raw CSV records
         </p>
       </div>
 
@@ -92,7 +94,31 @@ export const RawEventInspectorView: React.FC<RawEventInspectorViewProps> = ({
           </div>
 
           <div>
-            <label className="text-slate-600 dark:text-slate-400 block mb-1 font-semibold">Classification Threshold:</label>
+            <label className="text-slate-600 dark:text-slate-400 block mb-1 font-semibold">Classification Mode:</label>
+            <select
+              value={scoringMode}
+              onChange={(e) => setScoringMode(e.target.value as any)}
+              className="bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded px-3 py-1.5 text-slate-900 dark:text-slate-200 font-medium focus:border-sky-500 focus:outline-none"
+            >
+              <option value="retrospective">Retrospective / Descriptive</option>
+              <option value="walkForward">Walk-Forward / Lookahead-Safe</option>
+            </select>
+          </div>
+
+          {scoringMode === 'walkForward' && (
+            <div>
+              <label className="text-slate-600 dark:text-slate-400 block mb-1 font-semibold">Min Prior N:</label>
+              <input
+                type="number"
+                value={minHistory}
+                onChange={(e) => setMinHistory(Math.max(1, parseInt(e.target.value, 10) || 20))}
+                className="bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded px-3 py-1.5 text-slate-900 dark:text-slate-200 w-20 font-medium focus:border-sky-500 focus:outline-none"
+              />
+            </div>
+          )}
+
+          <div>
+            <label className="text-slate-600 dark:text-slate-400 block mb-1 font-semibold">Threshold:</label>
             <select
               value={percentile}
               onChange={(e) => setPercentile(parseInt(e.target.value, 10))}
@@ -200,23 +226,46 @@ export const RawEventInspectorView: React.FC<RawEventInspectorViewProps> = ({
                     </span>
                   </div>
                   <div className="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-1.5">
-                    <span className="text-slate-500 dark:text-slate-400">Historical Nonzero N:</span>
+                    <span className="text-slate-500 dark:text-slate-400">Scoring Mode:</span>
                     <span className="font-semibold text-slate-800 dark:text-slate-200">
-                      {auditData.surpriseAudit?.historicalDistributionN ?? 'N/A'}
+                      {auditData.surpriseAudit?.classificationModeLabel || (auditData.scoringMode === 'walkForward' ? 'Walk-Forward / Lookahead-Safe' : 'Retrospective / Descriptive')}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500 dark:text-slate-400">Observation Percentile Rank:</span>
+                    <span className="text-slate-500 dark:text-slate-400">
+                      {auditData.scoringMode === 'walkForward' ? 'Prior Nonzero Releases (t < t_event):' : 'Reference Nonzero Releases:'}
+                    </span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">
+                      {auditData.surpriseAudit?.priorValidObservations ?? auditData.surpriseAudit?.historicalDistributionN ?? 'N/A'}
+                      {auditData.scoringMode === 'walkForward' && ` (min required: ${auditData.surpriseAudit?.minHistoryRequired ?? 20})`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Strict-Lower Percentile Rank:</span>
                     <span className="font-bold text-purple-700 dark:text-purple-400">
-                      {auditData.parsedRelease.surprisePercentileRank !== null && auditData.parsedRelease.surprisePercentileRank !== undefined
-                        ? `P${auditData.parsedRelease.surprisePercentileRank.toFixed(1)}`
-                        : 'N/A'}
+                      {auditData.parsedRelease.surpriseAbsDelta !== null && auditData.parsedRelease.surpriseAbsDelta <= 1e-9
+                        ? 'N/A — exact match (score +1)'
+                        : (auditData.parsedRelease.surprisePercentileRank !== null && auditData.parsedRelease.surprisePercentileRank !== undefined
+                            ? `P${auditData.parsedRelease.surprisePercentileRank.toFixed(1)}`
+                            : 'N/A')}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Ties in Reference Population:</span>
+                    <span className="font-medium text-slate-700 dark:text-slate-300">
+                      {auditData.surpriseAudit?.tieRate !== undefined ? `${(auditData.surpriseAudit.tieRate * 100).toFixed(1)}% (k=${auditData.surpriseAudit.tieCount ?? 0})` : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Percentile Band:</span>
+                    <span className="font-mono text-slate-700 dark:text-slate-300">
+                      {auditData.surpriseAudit?.percentileBand ?? 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-500 dark:text-slate-400">Active Boundary (P{auditData.thresholds.percentile}):</span>
                     <span className="font-bold text-rose-700 dark:text-rose-400">
-                      P{auditData.thresholds.percentile} = {auditData.thresholds.surpriseThreshold !== null ? auditData.thresholds.surpriseThreshold.toFixed(3) : 'N/A'}
+                      P{auditData.thresholds.percentile} = {auditData.thresholds.surpriseThreshold !== null ? auditData.thresholds.surpriseThreshold.toFixed(4) : 'N/A'}
                     </span>
                   </div>
                 </div>
@@ -280,23 +329,46 @@ export const RawEventInspectorView: React.FC<RawEventInspectorViewProps> = ({
                     </span>
                   </div>
                   <div className="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-1.5">
-                    <span className="text-slate-500 dark:text-slate-400">Historical Nonzero N:</span>
+                    <span className="text-slate-500 dark:text-slate-400">Scoring Mode:</span>
                     <span className="font-semibold text-slate-800 dark:text-slate-200">
-                      {auditData.momentumAudit?.historicalDistributionN ?? 'N/A'}
+                      {auditData.momentumAudit?.classificationModeLabel || (auditData.scoringMode === 'walkForward' ? 'Walk-Forward / Lookahead-Safe' : 'Retrospective / Descriptive')}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500 dark:text-slate-400">Observation Percentile Rank:</span>
+                    <span className="text-slate-500 dark:text-slate-400">
+                      {auditData.scoringMode === 'walkForward' ? 'Prior Nonzero Releases (t < t_event):' : 'Reference Nonzero Releases:'}
+                    </span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">
+                      {auditData.momentumAudit?.priorValidObservations ?? auditData.momentumAudit?.historicalDistributionN ?? 'N/A'}
+                      {auditData.scoringMode === 'walkForward' && ` (min required: ${auditData.momentumAudit?.minHistoryRequired ?? 20})`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Strict-Lower Percentile Rank:</span>
                     <span className="font-bold text-purple-700 dark:text-purple-400">
-                      {auditData.parsedRelease.momentumPercentileRank !== null && auditData.parsedRelease.momentumPercentileRank !== undefined
-                        ? `P${auditData.parsedRelease.momentumPercentileRank.toFixed(1)}`
-                        : 'N/A'}
+                      {auditData.parsedRelease.momentumAbsDelta !== null && auditData.parsedRelease.momentumAbsDelta <= 1e-9
+                        ? 'N/A — exact match (score +1)'
+                        : (auditData.parsedRelease.momentumPercentileRank !== null && auditData.parsedRelease.momentumPercentileRank !== undefined
+                            ? `P${auditData.parsedRelease.momentumPercentileRank.toFixed(1)}`
+                            : 'N/A')}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Ties in Reference Population:</span>
+                    <span className="font-medium text-slate-700 dark:text-slate-300">
+                      {auditData.momentumAudit?.tieRate !== undefined ? `${(auditData.momentumAudit.tieRate * 100).toFixed(1)}% (k=${auditData.momentumAudit.tieCount ?? 0})` : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Percentile Band:</span>
+                    <span className="font-mono text-slate-700 dark:text-slate-300">
+                      {auditData.momentumAudit?.percentileBand ?? 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-500 dark:text-slate-400">Active Boundary (P{auditData.thresholds.percentile}):</span>
                     <span className="font-bold text-rose-700 dark:text-rose-400">
-                      P{auditData.thresholds.percentile} = {auditData.thresholds.momentumThreshold !== null ? auditData.thresholds.momentumThreshold.toFixed(3) : 'N/A'}
+                      P{auditData.thresholds.percentile} = {auditData.thresholds.momentumThreshold !== null ? auditData.thresholds.momentumThreshold.toFixed(4) : 'N/A'}
                     </span>
                   </div>
                 </div>

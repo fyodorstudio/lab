@@ -1,4 +1,15 @@
 import { DistributionStats, HistogramBin } from './types.js';
+import { CANONICAL_DECIMALS, FLOAT_EPSILON } from './constants.js';
+
+/**
+ * Deterministically rounds a number to canonical decimal places to eliminate IEEE-754 floating noise.
+ */
+export function canonicalizeNumber(val: number | null | undefined, decimals: number = CANONICAL_DECIMALS): number | null {
+  if (val === null || val === undefined || !Number.isFinite(val)) return null;
+  const factor = Math.pow(10, decimals);
+  const rounded = Math.round(val * factor) / factor;
+  return Object.is(rounded, -0) ? 0 : rounded;
+}
 
 /**
  * Calculates empirical quantile using linear interpolation between closest ranks.
@@ -6,20 +17,21 @@ import { DistributionStats, HistogramBin } from './types.js';
  */
 export function calculateQuantile(sortedValues: number[], percentile: number): number | null {
   if (!sortedValues || sortedValues.length === 0) return null;
-  if (sortedValues.length === 1) return sortedValues[0];
-  if (percentile <= 0) return sortedValues[0];
-  if (percentile >= 100) return sortedValues[sortedValues.length - 1];
+  if (sortedValues.length === 1) return canonicalizeNumber(sortedValues[0]);
+  if (percentile <= 0) return canonicalizeNumber(sortedValues[0]);
+  if (percentile >= 100) return canonicalizeNumber(sortedValues[sortedValues.length - 1]);
 
   const index = (percentile / 100) * (sortedValues.length - 1);
   const lowerIndex = Math.floor(index);
   const upperIndex = Math.ceil(index);
 
   if (lowerIndex === upperIndex) {
-    return sortedValues[lowerIndex];
+    return canonicalizeNumber(sortedValues[lowerIndex]);
   }
 
   const fraction = index - lowerIndex;
-  return sortedValues[lowerIndex] + fraction * (sortedValues[upperIndex] - sortedValues[lowerIndex]);
+  const raw = sortedValues[lowerIndex] + fraction * (sortedValues[upperIndex] - sortedValues[lowerIndex]);
+  return canonicalizeNumber(raw);
 }
 
 export function calculateMean(values: number[]): number | null {
@@ -28,7 +40,7 @@ export function calculateMean(values: number[]): number | null {
   for (let i = 0; i < values.length; i++) {
     sum += values[i];
   }
-  return sum / values.length;
+  return canonicalizeNumber(sum / values.length);
 }
 
 export function calculateMedian(sortedValues: number[]): number | null {
@@ -56,7 +68,7 @@ export function calculateDistributionStats(values: number[]): DistributionStats 
     };
   }
 
-  const sorted = [...values].sort((a, b) => a - b);
+  const sorted = [...values].map(v => canonicalizeNumber(v)!).sort((a, b) => a - b);
   return {
     n: sorted.length,
     min: sorted[0],
@@ -137,18 +149,21 @@ export function formatUtcDate(unixSeconds: number): string {
 }
 
 /**
- * Calculates empirical percentile rank (0 to 100) of a value against sorted historical values.
+ * Generic empirical percentile rank (0 to 100) of a value against sorted historical values.
  * Represents the percentage of historical values that are <= this value.
+ * Fully supports arbitrary signed numbers (negative, zero, positive).
  */
-export function calculatePercentileRank(sortedValues: number[], value: number): number | null {
+export function calculatePercentileRank(
+  sortedValues: number[],
+  value: number,
+  epsilon: number = FLOAT_EPSILON
+): number | null {
   if (!sortedValues || sortedValues.length === 0) return null;
   if (!Number.isFinite(value)) return null;
 
-  if (value <= 0) return 0.0;
-
   let count = 0;
   for (let i = 0; i < sortedValues.length; i++) {
-    if (sortedValues[i] <= value + 1e-9) {
+    if (sortedValues[i] <= value + epsilon) {
       count++;
     } else {
       break;
@@ -157,6 +172,78 @@ export function calculatePercentileRank(sortedValues: number[], value: number): 
 
   const pct = (count / sortedValues.length) * 100;
   return Math.round(pct * 10) / 10;
+}
+
+/**
+ * Strict-lower empirical percentile rank: percentage of historical values that are STRICTLY smaller than value:
+ * count(v < value - epsilon) / N * 100.
+ */
+export function calculateStrictLowerPercentileRank(
+  sortedValues: number[],
+  value: number,
+  epsilon: number = FLOAT_EPSILON
+): number | null {
+  if (!sortedValues || sortedValues.length === 0) return null;
+  if (!Number.isFinite(value)) return null;
+
+  let count = 0;
+  for (let i = 0; i < sortedValues.length; i++) {
+    if (sortedValues[i] < value - epsilon) {
+      count++;
+    } else {
+      break;
+    }
+  }
+
+  const pct = (count / sortedValues.length) * 100;
+  return Math.round(pct * 10) / 10;
+}
+
+export interface TieMetrics {
+  tieCount: number;
+  tieRate: number; // e.g. 15.0 for 15.0%
+  lowerRank: number; // count(v < x) / N * 100
+  upperRank: number; // count(v <= x) / N * 100
+  band: string; // e.g. "P70.0–P85.0"
+}
+
+/**
+ * Calculates tie diagnostics against sorted historical values using canonical epsilon comparison.
+ */
+export function calculateTieMetrics(
+  sortedValues: number[],
+  value: number,
+  epsilon: number = FLOAT_EPSILON
+): TieMetrics | null {
+  if (!sortedValues || sortedValues.length === 0 || !Number.isFinite(value)) return null;
+
+  const n = sortedValues.length;
+  let lowerCount = 0;
+  let tieCount = 0;
+  let upperCount = 0;
+
+  for (let i = 0; i < n; i++) {
+    const v = sortedValues[i];
+    if (v < value - epsilon) {
+      lowerCount++;
+      upperCount++;
+    } else if (Math.abs(v - value) <= epsilon) {
+      tieCount++;
+      upperCount++;
+    }
+  }
+
+  const lowerRank = Math.round((lowerCount / n) * 100 * 10) / 10;
+  const upperRank = Math.round((upperCount / n) * 100 * 10) / 10;
+  const tieRate = Math.round((tieCount / n) * 100 * 10) / 10;
+
+  return {
+    tieCount,
+    tieRate,
+    lowerRank,
+    upperRank,
+    band: `P${lowerRank.toFixed(1)}–P${upperRank.toFixed(1)}`,
+  };
 }
 
 /**

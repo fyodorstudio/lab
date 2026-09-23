@@ -112,13 +112,22 @@ export function createApiRouter(analyticsService: IAnalyticsService): Router {
       const valueId = (req.query.valueId as string) || '';
       const pair = (req.query.pair as string) || 'EURUSD';
       const percentile = req.query.percentile ? parseInt(req.query.percentile as string, 10) : 75;
+      const scoringMode = (req.query.scoringMode as any) || 'retrospective';
+      const minHistory = req.query.minHistory ? parseInt(req.query.minHistory as string, 10) : 20;
 
       if (!eventId) {
         res.status(400).json({ error: 'eventId is required' });
         return;
       }
 
-      const data = await analyticsService.getRawEventInspection(eventId, valueId, pair, percentile);
+      const data = await analyticsService.getRawEventInspection(
+        eventId,
+        valueId,
+        pair,
+        percentile,
+        scoringMode,
+        minHistory
+      );
       if (!data) {
         res.status(404).json({ error: 'Event observation not found' });
         return;

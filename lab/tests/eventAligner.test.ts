@@ -69,15 +69,21 @@ describe('Event Aligner and H1-H42 Sequencer', () => {
     // H1 close is closes[0]
     const p0 = opens[0];
     const h1Raw = closes[0] / p0 - 1;
-    const h1Norm = -1 * h1Raw;
+    // Exact event-currency simple return: P0/Pt - 1 for quote currency
+    const h1Norm = p0 / closes[0] - 1;
+    // Mathematically symmetric normalized log return: Q * ln(Pt/P0)
+    const h1Log = -1 * Math.log(closes[0] / p0);
 
     expect(res.returns[0]).toBeCloseTo(h1Norm, 8);
+    expect(res.logReturns[0]).toBeCloseTo(h1Log, 8);
     expect(res.rawReturns[0]).toBeCloseTo(h1Raw, 8);
 
     // H42 close is closes[41]
     const h42Raw = closes[41] / p0 - 1;
-    const h42Norm = -1 * h42Raw;
+    const h42Norm = p0 / closes[41] - 1;
+    const h42Log = -1 * Math.log(closes[41] / p0);
     expect(res.returns[41]).toBeCloseTo(h42Norm, 8);
+    expect(res.logReturns[41]).toBeCloseTo(h42Log, 8);
   });
 
   it('handles weekend gaps by counting available trading bars and setting crossesWeekend flag', () => {

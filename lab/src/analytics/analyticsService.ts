@@ -2,13 +2,46 @@ import {
   CalendarRepository,
 } from '../data/calendarLoader.js';
 import { CandleRepository } from '../data/candleLoader.js';
-import { FXPairInfo, OverviewMetrics, PatternQueryFilters, PatternResponse, DistributionResponse, EventObservation, EventScore, HorizonStatistics, ScoreMatrixData, PercentileThresholdRow, ThresholdDetails } from '../shared/types.js';
-import { calculateDistributionStats, createHistogramBins, calculateQuantile, calculatePercentileRank, formatWithUnit } from '../shared/utils.js';
+import {
+  FXPairInfo,
+  OverviewMetrics,
+  PatternQueryFilters,
+  PatternResponse,
+  DistributionResponse,
+  EventObservation,
+  EventScore,
+  HorizonStatistics,
+  ScoreMatrixData,
+  PercentileThresholdRow,
+  ThresholdDetails,
+  ScoringMode,
+  ParsedEventRelease,
+} from '../shared/types.js';
+import {
+  calculateDistributionStats,
+  createHistogramBins,
+  calculateQuantile,
+  calculatePercentileRank,
+  calculateStrictLowerPercentileRank,
+  calculateTieMetrics,
+  canonicalizeNumber,
+  formatWithUnit,
+  TieMetrics,
+} from '../shared/utils.js';
 import { calculateEventThresholds, scoreDelta, getScoreClassificationReason } from './eventScorer.js';
 import { alignEventToCandles } from './eventAligner.js';
 import { calculateHorizonStatistics, calculateScoreMatrix } from './statisticsEngine.js';
 import { getPairsForCurrency } from '../data/pairDiscovery.js';
-import { DEFAULT_THRESHOLD_PERCENTILE, RETROSPECTIVE_WARNING, EVENT_FAMILIES } from '../shared/constants.js';
+import {
+  DEFAULT_THRESHOLD_PERCENTILE,
+  DEFAULT_SCORING_MODE,
+  DEFAULT_MIN_WALK_FORWARD_HISTORY,
+  FLOAT_EPSILON,
+  RETROSPECTIVE_WARNING,
+  WALK_FORWARD_LABEL,
+  RETROSPECTIVE_LABEL,
+  EVENT_FAMILIES,
+} from '../shared/constants.js';
 
 export interface IAnalyticsService {
   getOverview(): Promise<OverviewMetrics>;
@@ -18,7 +51,14 @@ export interface IAnalyticsService {
   getDistribution(currency: string, eventName: string, percentile?: number): Promise<{ surprise: DistributionResponse; momentum: DistributionResponse }>;
   getPattern(query: PatternQueryFilters): Promise<PatternResponse>;
   getObservations(query: PatternQueryFilters, page?: number, pageSize?: number, sortBy?: string, sortDir?: 'asc' | 'desc'): Promise<{ total: number; page: number; pageSize: number; items: EventObservation[] }>;
-  getRawEventInspection(eventId: string, valueId: string, pair: string, thresholdPercentile?: number): Promise<any>;
+  getRawEventInspection(
+    eventId: string,
+    valueId: string,
+    pair: string,
+    thresholdPercentile?: number,
+    scoringMode?: ScoringMode,
+    minHistory?: number
+  ): Promise<any>;
   getFamilyComparison(currency: string, pair?: string): Promise<any[]>;
   getDataQuality(): Promise<any>;
 }
@@ -238,71 +278,295 @@ export class AnalyticsService implements IAnalyticsService {
     const currency = query.currency.toUpperCase();
     const eventName = query.eventName;
     const percentile = query.thresholdPercentile || DEFAULT_THRESHOLD_PERCENTILE;
+    const scoringMode: ScoringMode = query.scoringMode || DEFAULT_SCORING_MODE;
+    const minHistory = query.minHistory ?? DEFAULT_MIN_WALK_FORWARD_HISTORY;
     const pair = query.pair || 'EURUSD';
 
     const releases = this.calendarRepo.getReleasesForEvent(currency, eventName);
 
-    // Calculate historical thresholds for this exact event
-    const nonzeroSurpriseAbs: number[] = [];
-    const nonzeroMomentumAbs: number[] = [];
-
-    for (const r of releases) {
-      if (r.surpriseAbsDelta !== null && r.surpriseAbsDelta > 1e-12) {
-        nonzeroSurpriseAbs.push(r.surpriseAbsDelta);
-      }
-      if (r.momentumAbsDelta !== null && r.momentumAbsDelta > 1e-12) {
-        nonzeroMomentumAbs.push(r.momentumAbsDelta);
-      }
-    }
-
-    const thresholds = calculateEventThresholds(nonzeroSurpriseAbs, nonzeroMomentumAbs, percentile);
-    const sortedSurprise = [...nonzeroSurpriseAbs].sort((a, b) => a - b);
-    const sortedMomentum = [...nonzeroMomentumAbs].sort((a, b) => a - b);
+    // Sort chronologically ascending by timestamp
+    const sortedReleases = [...releases].sort((a, b) => a.timestamp - b.timestamp);
 
     const allObservations: EventObservation[] = [];
     const filteredObservations: EventObservation[] = [];
 
-    for (const r of releases) {
-      // Score calculation
-      const surpriseScore = r.hasCompleteAFP
-        ? scoreDelta(r.actual, r.forecast, thresholds.surpriseThreshold)
-        : null;
+    if (scoringMode === 'retrospective') {
+      // Retrospective mode: reference population is all nonzero absolute deltas from the selected historical sample
+      const nonzeroSurpriseAbs: number[] = [];
+      const nonzeroMomentumAbs: number[] = [];
 
-      const momentumScore = r.hasCompleteAFP
-        ? scoreDelta(r.actual, r.previous, thresholds.momentumThreshold)
-        : null;
+      for (const r of sortedReleases) {
+        if (r.hasCompleteAFP) {
+          if (r.surpriseAbsDelta !== null && r.surpriseAbsDelta > FLOAT_EPSILON) {
+            nonzeroSurpriseAbs.push(canonicalizeNumber(r.surpriseAbsDelta)!);
+          }
+          if (r.momentumAbsDelta !== null && r.momentumAbsDelta > FLOAT_EPSILON) {
+            nonzeroMomentumAbs.push(canonicalizeNumber(r.momentumAbsDelta)!);
+          }
+        }
+      }
 
-      const surprisePercentileRank = (r.hasCompleteAFP && r.surpriseAbsDelta !== null)
-        ? calculatePercentileRank(sortedSurprise, r.surpriseAbsDelta)
-        : null;
+      const thresholds = calculateEventThresholds(nonzeroSurpriseAbs, nonzeroMomentumAbs, percentile);
+      const sortedSurprise = [...nonzeroSurpriseAbs].sort((a, b) => a - b);
+      const sortedMomentum = [...nonzeroMomentumAbs].sort((a, b) => a - b);
 
-      const momentumPercentileRank = (r.hasCompleteAFP && r.momentumAbsDelta !== null)
-        ? calculatePercentileRank(sortedMomentum, r.momentumAbsDelta)
-        : null;
+      for (const r of sortedReleases) {
+        const hasA = r.actual !== null;
+        const hasF = r.forecast !== null;
+        const hasP = r.previous !== null;
+        const isComplete = r.hasCompleteAFP;
 
-      // Candle alignment
-      const alignment = alignEventToCandles(r.timestamp, currency, pair, candleSeries);
+        // Surprise score and strict-lower rank
+        let surpriseScore: EventScore = null;
+        let surprisePercentileRank: number | null = null;
+        let surpriseTieCount = 0;
+        let surpriseTieRate = 0;
+        let surpriseLowerRank: number | null = null;
+        let surpriseUpperRank: number | null = null;
+        let surpriseReason: string | undefined;
 
-      const obs: EventObservation = {
-        ...r,
-        surpriseScore,
-        momentumScore,
-        surprisePercentileRank,
-        momentumPercentileRank,
-        pair,
-        eventCurrencyPosition: alignment.eventCurrencyPosition,
-        directionMultiplier: alignment.directionMultiplier,
-        p0Timestamp: alignment.p0Timestamp,
-        p0: alignment.p0,
-        returns: alignment.returns,
-        rawReturns: alignment.rawReturns,
-        crossesWeekend: alignment.crossesWeekend,
-        isFridayRelease: alignment.isFridayRelease,
-      };
+        if (isComplete && hasA && hasF && r.surpriseAbsDelta !== null) {
+          const sAbs = canonicalizeNumber(r.surpriseAbsDelta)!;
+          if (sAbs <= FLOAT_EPSILON) {
+            surpriseScore = 1;
+            surprisePercentileRank = null; // Exact match: N/A
+            surpriseReason = getScoreClassificationReason('Surprise', r.actual, r.forecast, sAbs, thresholds.surpriseThreshold, percentile, surpriseScore, { scoringMode: 'retrospective' });
+          } else {
+            surpriseScore = scoreDelta(r.actual, r.forecast, thresholds.surpriseThreshold);
+            surprisePercentileRank = calculateStrictLowerPercentileRank(sortedSurprise, sAbs);
+            const tieMetrics = calculateTieMetrics(sortedSurprise, sAbs);
+            if (tieMetrics) {
+              surpriseTieCount = tieMetrics.tieCount;
+              surpriseTieRate = tieMetrics.tieRate;
+              surpriseLowerRank = tieMetrics.lowerRank;
+              surpriseUpperRank = tieMetrics.upperRank;
+            }
+            surpriseReason = getScoreClassificationReason('Surprise', r.actual, r.forecast, sAbs, thresholds.surpriseThreshold, percentile, surpriseScore, { scoringMode: 'retrospective', tieMetrics });
+          }
+        }
 
-      allObservations.push(obs);
+        // Momentum score and strict-lower rank
+        let momentumScore: EventScore = null;
+        let momentumPercentileRank: number | null = null;
+        let momentumTieCount = 0;
+        let momentumTieRate = 0;
+        let momentumLowerRank: number | null = null;
+        let momentumUpperRank: number | null = null;
+        let momentumReason: string | undefined;
 
-      // Filtering criteria
+        if (isComplete && hasA && hasP && r.momentumAbsDelta !== null) {
+          const mAbs = canonicalizeNumber(r.momentumAbsDelta)!;
+          if (mAbs <= FLOAT_EPSILON) {
+            momentumScore = 1;
+            momentumPercentileRank = null; // Exact match: N/A
+            momentumReason = getScoreClassificationReason('Momentum', r.actual, r.previous, mAbs, thresholds.momentumThreshold, percentile, momentumScore, { scoringMode: 'retrospective' });
+          } else {
+            momentumScore = scoreDelta(r.actual, r.previous, thresholds.momentumThreshold);
+            momentumPercentileRank = calculateStrictLowerPercentileRank(sortedMomentum, mAbs);
+            const tieMetrics = calculateTieMetrics(sortedMomentum, mAbs);
+            if (tieMetrics) {
+              momentumTieCount = tieMetrics.tieCount;
+              momentumTieRate = tieMetrics.tieRate;
+              momentumLowerRank = tieMetrics.lowerRank;
+              momentumUpperRank = tieMetrics.upperRank;
+            }
+            momentumReason = getScoreClassificationReason('Momentum', r.actual, r.previous, mAbs, thresholds.momentumThreshold, percentile, momentumScore, { scoringMode: 'retrospective', tieMetrics });
+          }
+        }
+
+        const alignment = alignEventToCandles(r.timestamp, currency, pair, candleSeries);
+
+        const obs: EventObservation = {
+          ...r,
+          surpriseScore,
+          momentumScore,
+          surprisePercentileRank,
+          momentumPercentileRank,
+          scoringMode,
+          priorSurpriseN: sortedSurprise.length,
+          priorMomentumN: sortedMomentum.length,
+          surpriseTieCount,
+          surpriseTieRate,
+          surpriseLowerRank,
+          surpriseUpperRank,
+          momentumTieCount,
+          momentumTieRate,
+          momentumLowerRank,
+          momentumUpperRank,
+          surpriseThresholdUsed: thresholds.surpriseThreshold,
+          momentumThresholdUsed: thresholds.momentumThreshold,
+          surpriseScoreReason: surpriseReason,
+          momentumScoreReason: momentumReason,
+          pair,
+          eventCurrencyPosition: alignment.eventCurrencyPosition,
+          directionMultiplier: alignment.directionMultiplier,
+          p0Timestamp: alignment.p0Timestamp,
+          p0: alignment.p0,
+          returns: alignment.returns,
+          logReturns: alignment.logReturns,
+          rawReturns: alignment.rawReturns,
+          crossesWeekend: alignment.crossesWeekend,
+          isFridayRelease: alignment.isFridayRelease,
+        };
+
+        allObservations.push(obs);
+      }
+    } else {
+      // Walk-Forward mode: timestamp-batched!
+      // Group releases by timestamp:
+      const timestampGroups = new Map<number, ParsedEventRelease[]>();
+      for (const r of sortedReleases) {
+        let group = timestampGroups.get(r.timestamp);
+        if (!group) {
+          group = [];
+          timestampGroups.set(r.timestamp, group);
+        }
+        group.push(r);
+      }
+
+      const runningSurprise: number[] = [];
+      const runningMomentum: number[] = [];
+
+      for (const groupReleases of timestampGroups.values()) {
+        // Compute current thresholds from strictly prior history (timestamp < current.timestamp)
+        const sortedPriorSurprise = [...runningSurprise].sort((a, b) => a - b);
+        const sortedPriorMomentum = [...runningMomentum].sort((a, b) => a - b);
+
+        const hasMinSurprise = sortedPriorSurprise.length >= minHistory;
+        const hasMinMomentum = sortedPriorMomentum.length >= minHistory;
+
+        const sThreshold = hasMinSurprise
+          ? calculateQuantile(sortedPriorSurprise, percentile)
+          : null;
+        const mThreshold = hasMinMomentum
+          ? calculateQuantile(sortedPriorMomentum, percentile)
+          : null;
+
+        for (const r of groupReleases) {
+          const hasA = r.actual !== null;
+          const hasF = r.forecast !== null;
+          const hasP = r.previous !== null;
+          const isComplete = r.hasCompleteAFP;
+
+          let surpriseScore: EventScore = null;
+          let surprisePercentileRank: number | null = null;
+          let surpriseTieCount = 0;
+          let surpriseTieRate = 0;
+          let surpriseLowerRank: number | null = null;
+          let surpriseUpperRank: number | null = null;
+          let surpriseReason: string | undefined;
+
+          if (isComplete && hasA && hasF && r.surpriseAbsDelta !== null) {
+            const sAbs = canonicalizeNumber(r.surpriseAbsDelta)!;
+            if (sAbs <= FLOAT_EPSILON) {
+              surpriseScore = 1;
+              surprisePercentileRank = null; // Exact match: N/A
+              surpriseReason = getScoreClassificationReason('Surprise', r.actual, r.forecast, sAbs, sThreshold, percentile, surpriseScore, { scoringMode: 'walkForward', priorN: sortedPriorSurprise.length, minHistory });
+            } else if (hasMinSurprise && sThreshold !== null) {
+              surpriseScore = scoreDelta(r.actual, r.forecast, sThreshold);
+              surprisePercentileRank = calculateStrictLowerPercentileRank(sortedPriorSurprise, sAbs);
+              const tieMetrics = calculateTieMetrics(sortedPriorSurprise, sAbs);
+              if (tieMetrics) {
+                surpriseTieCount = tieMetrics.tieCount;
+                surpriseTieRate = tieMetrics.tieRate;
+                surpriseLowerRank = tieMetrics.lowerRank;
+                surpriseUpperRank = tieMetrics.upperRank;
+              }
+              surpriseReason = getScoreClassificationReason('Surprise', r.actual, r.forecast, sAbs, sThreshold, percentile, surpriseScore, { scoringMode: 'walkForward', priorN: sortedPriorSurprise.length, minHistory, tieMetrics });
+            } else {
+              surpriseScore = null;
+              surprisePercentileRank = null;
+              surpriseReason = getScoreClassificationReason('Surprise', r.actual, r.forecast, sAbs, null, percentile, null, { scoringMode: 'walkForward', priorN: sortedPriorSurprise.length, minHistory });
+            }
+          }
+
+          let momentumScore: EventScore = null;
+          let momentumPercentileRank: number | null = null;
+          let momentumTieCount = 0;
+          let momentumTieRate = 0;
+          let momentumLowerRank: number | null = null;
+          let momentumUpperRank: number | null = null;
+          let momentumReason: string | undefined;
+
+          if (isComplete && hasA && hasP && r.momentumAbsDelta !== null) {
+            const mAbs = canonicalizeNumber(r.momentumAbsDelta)!;
+            if (mAbs <= FLOAT_EPSILON) {
+              momentumScore = 1;
+              momentumPercentileRank = null; // Exact match: N/A
+              momentumReason = getScoreClassificationReason('Momentum', r.actual, r.previous, mAbs, mThreshold, percentile, momentumScore, { scoringMode: 'walkForward', priorN: sortedPriorMomentum.length, minHistory });
+            } else if (hasMinMomentum && mThreshold !== null) {
+              momentumScore = scoreDelta(r.actual, r.previous, mThreshold);
+              momentumPercentileRank = calculateStrictLowerPercentileRank(sortedPriorMomentum, mAbs);
+              const tieMetrics = calculateTieMetrics(sortedPriorMomentum, mAbs);
+              if (tieMetrics) {
+                momentumTieCount = tieMetrics.tieCount;
+                momentumTieRate = tieMetrics.tieRate;
+                momentumLowerRank = tieMetrics.lowerRank;
+                momentumUpperRank = tieMetrics.upperRank;
+              }
+              momentumReason = getScoreClassificationReason('Momentum', r.actual, r.previous, mAbs, mThreshold, percentile, momentumScore, { scoringMode: 'walkForward', priorN: sortedPriorMomentum.length, minHistory, tieMetrics });
+            } else {
+              momentumScore = null;
+              momentumPercentileRank = null;
+              momentumReason = getScoreClassificationReason('Momentum', r.actual, r.previous, mAbs, null, percentile, null, { scoringMode: 'walkForward', priorN: sortedPriorMomentum.length, minHistory });
+            }
+          }
+
+          const alignment = alignEventToCandles(r.timestamp, currency, pair, candleSeries);
+
+          const obs: EventObservation = {
+            ...r,
+            surpriseScore,
+            momentumScore,
+            surprisePercentileRank,
+            momentumPercentileRank,
+            scoringMode,
+            priorSurpriseN: sortedPriorSurprise.length,
+            priorMomentumN: sortedPriorMomentum.length,
+            surpriseTieCount,
+            surpriseTieRate,
+            surpriseLowerRank,
+            surpriseUpperRank,
+            momentumTieCount,
+            momentumTieRate,
+            momentumLowerRank,
+            momentumUpperRank,
+            surpriseThresholdUsed: sThreshold,
+            momentumThresholdUsed: mThreshold,
+            surpriseScoreReason: surpriseReason,
+            momentumScoreReason: momentumReason,
+            pair,
+            eventCurrencyPosition: alignment.eventCurrencyPosition,
+            directionMultiplier: alignment.directionMultiplier,
+            p0Timestamp: alignment.p0Timestamp,
+            p0: alignment.p0,
+            returns: alignment.returns,
+            logReturns: alignment.logReturns,
+            rawReturns: alignment.rawReturns,
+            crossesWeekend: alignment.crossesWeekend,
+            isFridayRelease: alignment.isFridayRelease,
+          };
+
+          allObservations.push(obs);
+        }
+
+        // AFTER EVERY observation at timestamp T has been scored:
+        // Add valid observations from T to the running history
+        for (const r of groupReleases) {
+          if (r.hasCompleteAFP) {
+            if (r.surpriseAbsDelta !== null && r.surpriseAbsDelta > FLOAT_EPSILON) {
+              runningSurprise.push(canonicalizeNumber(r.surpriseAbsDelta)!);
+            }
+            if (r.momentumAbsDelta !== null && r.momentumAbsDelta > FLOAT_EPSILON) {
+              runningMomentum.push(canonicalizeNumber(r.momentumAbsDelta)!);
+            }
+          }
+        }
+      }
+    }
+
+    // Apply filtering criteria to allObservations
+    for (const obs of allObservations) {
       if (query.requireCompleteAFP !== false && !obs.hasCompleteAFP) {
         continue;
       }
@@ -437,6 +701,7 @@ export class AnalyticsService implements IAnalyticsService {
       momentumScore: o.momentumScore,
       p0: o.p0,
       returns: o.returns,
+      logReturns: o.logReturns,
     }));
 
     // Precompute full-sample 15-bin histogram distributions for all 42 horizons
@@ -453,6 +718,9 @@ export class AnalyticsService implements IAnalyticsService {
       horizonBins[h] = createHistogramBins(validReturns, 15);
     }
 
+    const scoringMode = query.scoringMode || DEFAULT_SCORING_MODE;
+    const minHistory = query.minHistory || DEFAULT_MIN_WALK_FORWARD_HISTORY;
+
     return {
       query,
       health: {
@@ -467,7 +735,11 @@ export class AnalyticsService implements IAnalyticsService {
         dataResolution: 'H1',
         p0AlignmentRule: 'First complete H1 candle beginning at or after event timestamp',
         thresholdPercentile: query.thresholdPercentile || DEFAULT_THRESHOLD_PERCENTILE,
-        retrospectiveClassificationWarning: RETROSPECTIVE_WARNING,
+        scoringMode,
+        minHistory,
+        retrospectiveClassificationWarning: scoringMode === 'walkForward'
+          ? 'Walk-forward mode calculates thresholds strictly from prior history (t < current). Minimum history requirement enforced.'
+          : RETROSPECTIVE_WARNING,
         warnings,
       },
       horizons,
@@ -527,7 +799,9 @@ export class AnalyticsService implements IAnalyticsService {
     eventId: string,
     valueId: string,
     pair: string,
-    thresholdPercentile: number = DEFAULT_THRESHOLD_PERCENTILE
+    thresholdPercentile: number = DEFAULT_THRESHOLD_PERCENTILE,
+    scoringMode: ScoringMode = DEFAULT_SCORING_MODE,
+    minHistory: number = DEFAULT_MIN_WALK_FORWARD_HISTORY
   ): Promise<any> {
     const rawRows = this.calendarRepo.getRawRows();
     const rawRow = rawRows.find((r) => r.eventId === eventId && (r.valueId === valueId || !valueId));
@@ -539,78 +813,159 @@ export class AnalyticsService implements IAnalyticsService {
     const releases = this.calendarRepo.getReleasesForEvent(rawRow.currency, rawRow.eventName);
     const parsedRelease = releases.find((r) => r.eventId === eventId && r.valueId === valueId) || releases[0];
 
-    // Historical threshold calculation
+    // Reference populations depending on scoringMode
+    const referenceReleases = scoringMode === 'walkForward'
+      ? releases.filter((r) => r.timestamp < rawRow.timestamp)
+      : releases;
+
     const nonzeroSurpriseAbs: number[] = [];
     const nonzeroMomentumAbs: number[] = [];
-    for (const r of releases) {
-      if (r.surpriseAbsDelta !== null && r.surpriseAbsDelta > 1e-12) nonzeroSurpriseAbs.push(r.surpriseAbsDelta);
-      if (r.momentumAbsDelta !== null && r.momentumAbsDelta > 1e-12) nonzeroMomentumAbs.push(r.momentumAbsDelta);
+    for (const r of referenceReleases) {
+      if (r.hasCompleteAFP) {
+        if (r.surpriseAbsDelta !== null && r.surpriseAbsDelta > FLOAT_EPSILON) {
+          nonzeroSurpriseAbs.push(canonicalizeNumber(r.surpriseAbsDelta)!);
+        }
+        if (r.momentumAbsDelta !== null && r.momentumAbsDelta > FLOAT_EPSILON) {
+          nonzeroMomentumAbs.push(canonicalizeNumber(r.momentumAbsDelta)!);
+        }
+      }
     }
-    const thresholds = calculateEventThresholds(nonzeroSurpriseAbs, nonzeroMomentumAbs, thresholdPercentile);
+
     const sortedSurprise = [...nonzeroSurpriseAbs].sort((a, b) => a - b);
     const sortedMomentum = [...nonzeroMomentumAbs].sort((a, b) => a - b);
     const unit = parsedRelease.unit || releases.find((r) => r.unit)?.unit;
 
-    const surpriseScore = parsedRelease.hasCompleteAFP
-      ? scoreDelta(parsedRelease.actual, parsedRelease.forecast, thresholds.surpriseThreshold)
-      : null;
-    const momentumScore = parsedRelease.hasCompleteAFP
-      ? scoreDelta(parsedRelease.actual, parsedRelease.previous, thresholds.momentumThreshold)
-      : null;
+    const hasMinSurprise = scoringMode === 'retrospective' || sortedSurprise.length >= minHistory;
+    const hasMinMomentum = scoringMode === 'retrospective' || sortedMomentum.length >= minHistory;
 
-    const surprisePercentileRank = (parsedRelease.hasCompleteAFP && parsedRelease.surpriseAbsDelta !== null)
-      ? calculatePercentileRank(sortedSurprise, parsedRelease.surpriseAbsDelta)
-      : null;
-    const momentumPercentileRank = (parsedRelease.hasCompleteAFP && parsedRelease.momentumAbsDelta !== null)
-      ? calculatePercentileRank(sortedMomentum, parsedRelease.momentumAbsDelta)
-      : null;
+    const surpriseThreshold = hasMinSurprise ? calculateQuantile(sortedSurprise, thresholdPercentile) : null;
+    const momentumThreshold = hasMinMomentum ? calculateQuantile(sortedMomentum, thresholdPercentile) : null;
+
+    const sAbs = parsedRelease.surpriseAbsDelta !== null ? canonicalizeNumber(parsedRelease.surpriseAbsDelta)! : null;
+    const mAbs = parsedRelease.momentumAbsDelta !== null ? canonicalizeNumber(parsedRelease.momentumAbsDelta)! : null;
+
+    // Surprise scoring & rank
+    let surpriseScore: EventScore = null;
+    let surprisePercentileRank: number | null = null;
+    let surpriseTieMetrics: TieMetrics | null = null;
+    let surpriseReason: string;
+
+    if (parsedRelease.hasCompleteAFP && parsedRelease.actual !== null && parsedRelease.forecast !== null && sAbs !== null) {
+      if (sAbs <= FLOAT_EPSILON) {
+        surpriseScore = 1;
+        surprisePercentileRank = null; // Exact match: N/A
+        surpriseReason = getScoreClassificationReason('Surprise', parsedRelease.actual, parsedRelease.forecast, sAbs, surpriseThreshold, thresholdPercentile, surpriseScore, { scoringMode, priorN: sortedSurprise.length, minHistory });
+      } else if (hasMinSurprise && surpriseThreshold !== null) {
+        surpriseScore = scoreDelta(parsedRelease.actual, parsedRelease.forecast, surpriseThreshold);
+        surprisePercentileRank = calculateStrictLowerPercentileRank(sortedSurprise, sAbs);
+        surpriseTieMetrics = calculateTieMetrics(sortedSurprise, sAbs);
+        surpriseReason = getScoreClassificationReason('Surprise', parsedRelease.actual, parsedRelease.forecast, sAbs, surpriseThreshold, thresholdPercentile, surpriseScore, { scoringMode, priorN: sortedSurprise.length, minHistory, tieMetrics: surpriseTieMetrics });
+      } else {
+        surpriseScore = null;
+        surprisePercentileRank = null;
+        surpriseReason = getScoreClassificationReason('Surprise', parsedRelease.actual, parsedRelease.forecast, sAbs, null, thresholdPercentile, null, { scoringMode, priorN: sortedSurprise.length, minHistory });
+      }
+    } else {
+      surpriseReason = 'Incomplete data: Actual or Forecast is missing (Score: N/A)';
+    }
+
+    // Momentum scoring & rank
+    let momentumScore: EventScore = null;
+    let momentumPercentileRank: number | null = null;
+    let momentumTieMetrics: TieMetrics | null = null;
+    let momentumReason: string;
+
+    if (parsedRelease.hasCompleteAFP && parsedRelease.actual !== null && parsedRelease.previous !== null && mAbs !== null) {
+      if (mAbs <= FLOAT_EPSILON) {
+        momentumScore = 1;
+        momentumPercentileRank = null; // Exact match: N/A
+        momentumReason = getScoreClassificationReason('Momentum', parsedRelease.actual, parsedRelease.previous, mAbs, momentumThreshold, thresholdPercentile, momentumScore, { scoringMode, priorN: sortedMomentum.length, minHistory });
+      } else if (hasMinMomentum && momentumThreshold !== null) {
+        momentumScore = scoreDelta(parsedRelease.actual, parsedRelease.previous, momentumThreshold);
+        momentumPercentileRank = calculateStrictLowerPercentileRank(sortedMomentum, mAbs);
+        momentumTieMetrics = calculateTieMetrics(sortedMomentum, mAbs);
+        momentumReason = getScoreClassificationReason('Momentum', parsedRelease.actual, parsedRelease.previous, mAbs, momentumThreshold, thresholdPercentile, momentumScore, { scoringMode, priorN: sortedMomentum.length, minHistory, tieMetrics: momentumTieMetrics });
+      } else {
+        momentumScore = null;
+        momentumPercentileRank = null;
+        momentumReason = getScoreClassificationReason('Momentum', parsedRelease.actual, parsedRelease.previous, mAbs, null, thresholdPercentile, null, { scoringMode, priorN: sortedMomentum.length, minHistory });
+      }
+    } else {
+      momentumReason = 'Incomplete data: Actual or Previous is missing (Score: N/A)';
+    }
 
     const surprisePercentileTable: PercentileThresholdRow[] = [50, 60, 70, 75, 80, 85, 90, 95].map((p) => {
-      const val = calculateQuantile(sortedSurprise, p);
+      const val = hasMinSurprise ? calculateQuantile(sortedSurprise, p) : null;
       return { percentile: p, label: `P${p}`, threshold: val, formattedThreshold: formatWithUnit(val, unit) };
     });
 
     const momentumPercentileTable: PercentileThresholdRow[] = [50, 60, 70, 75, 80, 85, 90, 95].map((p) => {
-      const val = calculateQuantile(sortedMomentum, p);
+      const val = hasMinMomentum ? calculateQuantile(sortedMomentum, p) : null;
       return { percentile: p, label: `P${p}`, threshold: val, formattedThreshold: formatWithUnit(val, unit) };
     });
 
     const surpriseAudit = {
       name: 'Surprise (|Actual - Forecast|)',
+      scoringMode,
+      classificationModeLabel: scoringMode === 'walkForward' ? WALK_FORWARD_LABEL : RETROSPECTIVE_LABEL,
+      rawA: rawRow.actualRaw,
+      rawF: rawRow.forecastRaw,
+      parsedA: parsedRelease.actual,
+      parsedF: parsedRelease.forecast,
       actual: parsedRelease.actual,
       comparison: parsedRelease.forecast,
       comparisonType: 'Forecast' as const,
       rawDelta: parsedRelease.surpriseDelta,
       absDelta: parsedRelease.surpriseAbsDelta,
-      historicalDistributionN: nonzeroSurpriseAbs.length,
+      priorValidObservations: sortedSurprise.length,
+      historicalDistributionN: sortedSurprise.length,
+      minHistoryRequired: scoringMode === 'walkForward' ? minHistory : 0,
+      hasSufficientHistory: hasMinSurprise,
       percentileTable: surprisePercentileTable,
       observationPercentileRank: surprisePercentileRank,
+      strictLowerPercentileRank: surprisePercentileRank,
+      tieCount: surpriseTieMetrics?.tieCount ?? 0,
+      tieRate: surpriseTieMetrics?.tieRate ?? 0,
+      percentileBand: surpriseTieMetrics?.band ?? (sAbs !== null && sAbs <= FLOAT_EPSILON ? 'N/A — exact match' : 'N/A'),
       selectedClassificationBoundary: {
         percentile: thresholdPercentile,
-        threshold: thresholds.surpriseThreshold,
-        formatted: formatWithUnit(thresholds.surpriseThreshold, unit),
+        threshold: surpriseThreshold,
+        formatted: formatWithUnit(surpriseThreshold, unit),
       },
       result: surpriseScore,
-      reason: getScoreClassificationReason('Surprise', parsedRelease.actual, parsedRelease.forecast, parsedRelease.surpriseAbsDelta, thresholds.surpriseThreshold, thresholdPercentile, surpriseScore),
+      reason: surpriseReason,
     };
 
     const momentumAudit = {
       name: 'Momentum (|Actual - Previous|)',
+      scoringMode,
+      classificationModeLabel: scoringMode === 'walkForward' ? WALK_FORWARD_LABEL : RETROSPECTIVE_LABEL,
+      rawA: rawRow.actualRaw,
+      rawP: rawRow.previousRaw,
+      parsedA: parsedRelease.actual,
+      parsedP: parsedRelease.previous,
       actual: parsedRelease.actual,
       comparison: parsedRelease.previous,
       comparisonType: 'Previous' as const,
       rawDelta: parsedRelease.momentumDelta,
       absDelta: parsedRelease.momentumAbsDelta,
-      historicalDistributionN: nonzeroMomentumAbs.length,
+      priorValidObservations: sortedMomentum.length,
+      historicalDistributionN: sortedMomentum.length,
+      minHistoryRequired: scoringMode === 'walkForward' ? minHistory : 0,
+      hasSufficientHistory: hasMinMomentum,
       percentileTable: momentumPercentileTable,
       observationPercentileRank: momentumPercentileRank,
+      strictLowerPercentileRank: momentumPercentileRank,
+      tieCount: momentumTieMetrics?.tieCount ?? 0,
+      tieRate: momentumTieMetrics?.tieRate ?? 0,
+      percentileBand: momentumTieMetrics?.band ?? (mAbs !== null && mAbs <= FLOAT_EPSILON ? 'N/A — exact match' : 'N/A'),
       selectedClassificationBoundary: {
         percentile: thresholdPercentile,
-        threshold: thresholds.momentumThreshold,
-        formatted: formatWithUnit(thresholds.momentumThreshold, unit),
+        threshold: momentumThreshold,
+        formatted: formatWithUnit(momentumThreshold, unit),
       },
       result: momentumScore,
-      reason: getScoreClassificationReason('Momentum', parsedRelease.actual, parsedRelease.previous, parsedRelease.momentumAbsDelta, thresholds.momentumThreshold, thresholdPercentile, momentumScore),
+      reason: momentumReason,
     };
 
     // Candle series alignment
@@ -645,14 +1000,19 @@ export class AnalyticsService implements IAnalyticsService {
         ...parsedRelease,
         surprisePercentileRank,
         momentumPercentileRank,
+        scoringMode,
       },
+      scoringMode,
+      classificationModeLabel: scoringMode === 'walkForward' ? WALK_FORWARD_LABEL : RETROSPECTIVE_LABEL,
       surpriseAudit,
       momentumAudit,
       thresholds: {
         percentile: thresholdPercentile,
-        surpriseThreshold: thresholds.surpriseThreshold,
-        momentumThreshold: thresholds.momentumThreshold,
+        surpriseThreshold,
+        momentumThreshold,
         historicalSampleSize: releases.length,
+        priorValidSurpriseN: sortedSurprise.length,
+        priorValidMomentumN: sortedMomentum.length,
       },
       scores: {
         surpriseScore,
@@ -691,6 +1051,7 @@ export class AnalyticsService implements IAnalyticsService {
         p0Timestamp: alignment.p0Timestamp,
         p0: alignment.p0,
         returns: alignment.returns,
+        logReturns: alignment.logReturns,
         rawReturns: alignment.rawReturns,
         crossesWeekend: alignment.crossesWeekend,
         isFridayRelease: alignment.isFridayRelease,

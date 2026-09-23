@@ -8,3 +8,4 @@ exports/
 **/exports/
 *.log
 .DS_Store
+raw_data/

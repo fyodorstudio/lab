@@ -4,7 +4,8 @@ import { getCurrencyPosition } from '../data/pairDiscovery.js';
 export interface AlignedPathResult {
   p0Timestamp: number | null;
   p0: number | null;
-  returns: Array<number | null>; // normalized returns (length 42)
+  returns: Array<number | null>; // exact event-currency simple returns (length 42)
+  logReturns: Array<number | null>; // mathematically symmetric normalized log returns: Q * ln(Pt/P0) (length 42)
   rawReturns: Array<number | null>; // raw pair returns (length 42)
   crossesWeekend: boolean;
   isFridayRelease: boolean;
@@ -32,6 +33,7 @@ export function alignEventToCandles(
       p0Timestamp: null,
       p0: null,
       returns: Array(42).fill(null),
+      logReturns: Array(42).fill(null),
       rawReturns: Array(42).fill(null),
       crossesWeekend: false,
       isFridayRelease,
@@ -50,6 +52,7 @@ export function alignEventToCandles(
       p0Timestamp: null,
       p0: null,
       returns: Array(42).fill(null),
+      logReturns: Array(42).fill(null),
       rawReturns: Array(42).fill(null),
       crossesWeekend: false,
       isFridayRelease,
@@ -67,6 +70,7 @@ export function alignEventToCandles(
       p0Timestamp,
       p0: null,
       returns: Array(42).fill(null),
+      logReturns: Array(42).fill(null),
       rawReturns: Array(42).fill(null),
       crossesWeekend: false,
       isFridayRelease,
@@ -77,6 +81,7 @@ export function alignEventToCandles(
   }
 
   const returns: Array<number | null> = [];
+  const logReturns: Array<number | null> = [];
   const rawReturns: Array<number | null> = [];
   let crossesWeekend = false;
   let availableCount = 0;
@@ -87,10 +92,22 @@ export function alignEventToCandles(
     if (candleIdx < candleSeries.times.length) {
       const closePrice = candleSeries.closes[candleIdx];
       const rawReturn = closePrice / p0 - 1;
-      const normalizedReturn = multiplier * rawReturn;
+
+      // Exact event-currency simple return:
+      // Base currency: Pt / P0 - 1
+      // Quote currency: P0 / Pt - 1
+      const normalizedSimpleReturn = position === 'base'
+        ? rawReturn
+        : (closePrice > 0 ? (p0 / closePrice - 1) : null);
+
+      // Mathematically symmetric normalized log return: Q * ln(Pt / P0)
+      const normalizedLogReturn = closePrice > 0 && p0 > 0
+        ? multiplier * Math.log(closePrice / p0)
+        : null;
 
       rawReturns.push(rawReturn);
-      returns.push(normalizedReturn);
+      returns.push(normalizedSimpleReturn);
+      logReturns.push(normalizedLogReturn);
       availableCount++;
 
       // Check for weekend gap: if consecutive candles gap by > 3600 seconds
@@ -105,6 +122,7 @@ export function alignEventToCandles(
       // Horizon beyond available data
       rawReturns.push(null);
       returns.push(null);
+      logReturns.push(null);
     }
   }
 
@@ -112,6 +130,7 @@ export function alignEventToCandles(
     p0Timestamp,
     p0,
     returns,
+    logReturns,
     rawReturns,
     crossesWeekend,
     isFridayRelease,

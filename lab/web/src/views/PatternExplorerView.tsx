@@ -61,6 +61,8 @@ export const PatternExplorerView: React.FC<PatternExplorerViewProps> = ({
   const [simultaneousFilter, setSimultaneousFilter] = useState<'all' | 'isolated' | 'simultaneous'>('all');
   const [weekendFilter, setWeekendFilter] = useState<'all' | 'excludeFriday' | 'excludeCrossingWeekend'>('all');
   const [requireCompleteAFP, setRequireCompleteAFP] = useState(true);
+  const [scoringMode, setScoringMode] = useState<'retrospective' | 'walkForward'>('retrospective');
+  const [minHistory, setMinHistory] = useState(20);
 
   const [patternData, setPatternData] = useState<PatternResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -126,6 +128,8 @@ export const PatternExplorerView: React.FC<PatternExplorerViewProps> = ({
       surpriseScore: selectedSurpriseScore,
       momentumScore: selectedMomentumScore,
       thresholdPercentile,
+      scoringMode,
+      minHistory,
       requireCompleteAFP,
       simultaneousFilter,
       weekendFilter,
@@ -379,28 +383,57 @@ export const PatternExplorerView: React.FC<PatternExplorerViewProps> = ({
           </div>
         )}
 
-        {/* Magnitude Threshold presets */}
-        <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center space-x-2">
-            <span className="text-slate-500 dark:text-slate-400 font-semibold">Relative Magnitude Threshold:</span>
-            <div className="flex space-x-1">
-              {[50, 60, 70, 75, 80, 85, 90, 95].map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setThresholdPercentile(p)}
-                  className={`px-2 py-0.5 rounded text-[11px] font-mono transition-colors cursor-pointer ${
-                    thresholdPercentile === p
-                      ? 'bg-rose-600 text-white font-bold shadow-sm'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700'
-                  }`}
-                >
-                  P{p}
-                </button>
-              ))}
+        {/* Scoring Mode & Magnitude Threshold presets */}
+        <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center space-x-1.5">
+              <span className="text-slate-500 dark:text-slate-400 font-semibold">Classification:</span>
+              <select
+                value={scoringMode}
+                onChange={(e) => setScoringMode(e.target.value as any)}
+                className="bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded px-2 py-0.5 text-xs text-slate-800 dark:text-slate-200 font-medium"
+              >
+                <option value="retrospective">Retrospective</option>
+                <option value="walkForward">Walk-Forward</option>
+              </select>
+            </div>
+
+            {scoringMode === 'walkForward' && (
+              <div className="flex items-center space-x-1">
+                <span className="text-slate-500 dark:text-slate-400 text-xs">Min Prior N:</span>
+                <input
+                  type="number"
+                  value={minHistory}
+                  onChange={(e) => setMinHistory(Math.max(1, parseInt(e.target.value, 10) || 20))}
+                  className="bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded px-1.5 py-0.5 text-xs text-slate-800 dark:text-slate-200 w-14 font-medium"
+                />
+              </div>
+            )}
+
+            <div className="flex items-center space-x-1.5">
+              <span className="text-slate-500 dark:text-slate-400 font-semibold">Magnitude Boundary:</span>
+              <div className="flex space-x-1">
+                {[50, 60, 70, 75, 80, 85, 90, 95].map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setThresholdPercentile(p)}
+                    className={`px-2 py-0.5 rounded text-[11px] font-mono transition-colors cursor-pointer ${
+                      thresholdPercentile === p
+                        ? 'bg-rose-600 text-white font-bold shadow-sm'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700'
+                    }`}
+                  >
+                    P{p}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
+
           <span className="text-slate-500 dark:text-slate-400 text-[11px]">
-            Default: 75th percentile of nonzero historical deltas
+            {scoringMode === 'walkForward'
+              ? 'Walk-Forward: strictly prior nonzero observations (t < t_current)'
+              : 'Retrospective: full-sample nonzero observations'}
           </span>
         </div>
       </div>

@@ -194,6 +194,7 @@ export interface EventObservation {
   p0Timestamp: number | null;
   p0: number | null;
   returns: Array<number | null>;
+  logReturns?: Array<number | null>;
   rawReturns: Array<number | null>;
   crossesWeekend: boolean;
   isFridayRelease: boolean;
@@ -273,12 +274,16 @@ export async function fetchInspect(
   eventId: string,
   valueId: string,
   pair: string,
-  percentile: number = 75
+  percentile: number = 75,
+  scoringMode: string = 'retrospective',
+  minHistory: number = 20
 ): Promise<any> {
   const res = await fetch(
     `${BASE_URL}/inspect?eventId=${encodeURIComponent(eventId)}&valueId=${encodeURIComponent(
       valueId
-    )}&pair=${encodeURIComponent(pair)}&percentile=${percentile}`
+    )}&pair=${encodeURIComponent(pair)}&percentile=${percentile}&scoringMode=${encodeURIComponent(
+      scoringMode
+    )}&minHistory=${minHistory}`
   );
   if (!res.ok) throw new Error(`Failed to inspect event: ${res.statusText}`);
   return res.json();
