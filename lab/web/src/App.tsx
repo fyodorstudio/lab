@@ -13,6 +13,8 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('pattern');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [selectedEvent, setSelectedEvent] = useState('CPI m/m');
+  const [selectedEventId, setSelectedEventId] = useState('840030005');
+  const [selectedEventSeriesKey, setSelectedEventSeriesKey] = useState('');
   const [selectedPair, setSelectedPair] = useState('EURUSD');
   const [selectedFamily, setSelectedFamily] = useState('all');
 
@@ -45,6 +47,10 @@ export const App: React.FC = () => {
           onCurrencyChange={setSelectedCurrency}
           selectedEvent={selectedEvent}
           onEventChange={setSelectedEvent}
+          selectedEventId={selectedEventId}
+          onEventIdChange={setSelectedEventId}
+          selectedEventSeriesKey={selectedEventSeriesKey}
+          onEventSeriesKeyChange={setSelectedEventSeriesKey}
           selectedPair={selectedPair}
           onPairChange={setSelectedPair}
         />
@@ -57,6 +63,10 @@ export const App: React.FC = () => {
           onCurrencyChange={setSelectedCurrency}
           selectedEvent={selectedEvent}
           onEventChange={setSelectedEvent}
+          selectedEventId={selectedEventId}
+          onEventIdChange={setSelectedEventId}
+          selectedEventSeriesKey={selectedEventSeriesKey}
+          onEventSeriesKeyChange={setSelectedEventSeriesKey}
           selectedPair={selectedPair}
           onPairChange={setSelectedPair}
           selectedFamily={selectedFamily}
@@ -93,6 +103,8 @@ export const App: React.FC = () => {
         query={{
           currency: selectedCurrency,
           eventName: selectedEvent || 'CPI m/m',
+          eventId: selectedEventId,
+          eventSeriesKey: selectedEventSeriesKey,
           pair: selectedPair,
         }}
       />

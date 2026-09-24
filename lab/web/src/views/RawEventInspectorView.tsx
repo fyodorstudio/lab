@@ -153,7 +153,7 @@ export const RawEventInspectorView: React.FC<RawEventInspectorViewProps> = ({
           {/* Step 1: Raw Calendar Record */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 space-y-3 font-mono text-xs shadow-sm dark:shadow-md transition-colors duration-150">
             <h3 className="font-bold border-b border-slate-200 dark:border-slate-800 pb-2 text-sky-700 dark:text-sky-400">
-              1. Raw Economic Calendar Row (from fyodor_calendar_master_history_repaired.csv)
+              1. Raw Economic Calendar Row (from {auditData.rawRow.sourceFile})
             </h3>
             <div className="bg-slate-50 dark:bg-slate-950/80 p-3 rounded border border-slate-200 dark:border-slate-800 text-[11px] overflow-x-auto text-slate-800 dark:text-slate-300 font-mono">
               {auditData.rawRow.eventId},{auditData.rawRow.valueId},{auditData.rawRow.timestamp},
@@ -166,7 +166,7 @@ export const RawEventInspectorView: React.FC<RawEventInspectorViewProps> = ({
               <div>
                 <span className="text-slate-500 dark:text-slate-400 block">Timestamp:</span>
                 <span className="text-slate-900 dark:text-slate-100 font-bold">{auditData.rawRow.timestamp}</span> (
-                {new Date(auditData.rawRow.timestamp * 1000).toISOString()})
+                {new Date(auditData.rawRow.timestamp * 1000).toISOString().replace('.000Z', '')} broker server time)
               </div>
               <div>
                 <span className="text-slate-500 dark:text-slate-400 block">Currency &amp; Importance:</span>
@@ -180,7 +180,28 @@ export const RawEventInspectorView: React.FC<RawEventInspectorViewProps> = ({
                 <span className="text-slate-500 dark:text-slate-400 block">Family:</span>
                 <span className="text-slate-800 dark:text-slate-200 font-semibold">{auditData.parsedRelease.eventFamily}</span>
               </div>
+              <div>
+                <span className="text-slate-500 dark:text-slate-400 block">Period / revision:</span>
+                <span className="text-slate-800 dark:text-slate-200 font-semibold">{auditData.rawRow.periodTimestamp ?? 'N/A'} / {auditData.rawRow.revision ?? 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 dark:text-slate-400 block">Event code / unit:</span>
+                <span className="text-slate-800 dark:text-slate-200 font-semibold">{auditData.rawRow.eventCode || 'N/A'} / {auditData.rawRow.sourceUnit || 'N/A'}</span>
+              </div>
             </div>
+
+            {auditData.surpriseAudit?.referencePopulationIdentity && (
+              <div className={`mt-3 p-3 rounded border ${auditData.surpriseAudit.referencePopulationIdentity.identityWarning ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-900/60' : 'bg-slate-50 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800'}`}>
+                <div className="font-bold">Reference series: {auditData.surpriseAudit.referencePopulationIdentity.eventSeriesKey}</div>
+                <div className="text-[10px] mt-1">
+                  {auditData.surpriseAudit.referencePopulationIdentity.sourceSeriesObservations} source rows across {auditData.surpriseAudit.referencePopulationIdentity.activeMonths} active months
+                  {' '}({auditData.surpriseAudit.referencePopulationIdentity.averageReleasesPerActiveMonth.toFixed(2)} releases/month).
+                </div>
+                {auditData.surpriseAudit.referencePopulationIdentity.identityWarning && (
+                  <div className="text-amber-900 dark:text-amber-200 font-semibold mt-1">{auditData.surpriseAudit.referencePopulationIdentity.identityWarning}</div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Step 2: Comprehensive Mathematical Classification Audit */}
@@ -413,7 +434,7 @@ export const RawEventInspectorView: React.FC<RawEventInspectorViewProps> = ({
               <div className="flex justify-between">
                 <span className="text-slate-500 dark:text-slate-400">Aligned P0 Timestamp:</span>
                 <span className="font-bold text-slate-900 dark:text-slate-100">
-                  {auditData.alignment.p0Timestamp} ({new Date(auditData.alignment.p0Timestamp * 1000).toISOString()})
+                  {auditData.alignment.p0Timestamp} ({new Date(auditData.alignment.p0Timestamp * 1000).toISOString().replace('.000Z', '')} broker server time)
                 </span>
               </div>
               <div className="flex justify-between">
@@ -433,7 +454,7 @@ export const RawEventInspectorView: React.FC<RawEventInspectorViewProps> = ({
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-400 text-left">
                     <th className="p-2">Relative Bar</th>
-                    <th className="p-2">Candle Open Time (UTC)</th>
+                    <th className="p-2">Candle Open Time (Broker Server)</th>
                     <th className="p-2 text-right">Open</th>
                     <th className="p-2 text-right">High</th>
                     <th className="p-2 text-right">Low</th>

@@ -5,6 +5,7 @@ import { CalendarRepository } from '../data/calendarLoader.js';
 import { CandleRepository } from '../data/candleLoader.js';
 import { discoverFXPairs } from '../data/pairDiscovery.js';
 import { CacheManager } from '../data/cacheManager.js';
+import { resolveResearchDataSource } from '../data/dataSourceResolver.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,13 +15,8 @@ async function runIngest() {
   const startTime = Date.now();
 
   const repoRoot = path.resolve(__dirname, '../../..');
-  const calendarPath = path.join(
-    repoRoot,
-    'raw_data',
-    'economic calendar',
-    'fyodor_calendar_master_history_repaired.csv'
-  );
-  const candlesDir = path.join(repoRoot, 'raw_data', 'fyodor_candles');
+  const source = resolveResearchDataSource(repoRoot);
+  const { calendarPath, candlesDir } = source;
   const cacheDir = path.resolve(__dirname, '../../generated-cache');
 
   if (!fs.existsSync(calendarPath)) {
@@ -35,9 +31,10 @@ async function runIngest() {
 
   const cache = new CacheManager(cacheDir);
 
+  console.log(`Source: ${source.label}`);
   console.log(`1. Parsing economic calendar: ${calendarPath}...`);
   const calStart = Date.now();
-  const calendarRepo = new CalendarRepository(calendarPath);
+  const calendarRepo = new CalendarRepository(calendarPath, source.manifest);
   await calendarRepo.load();
   const calMetrics = calendarRepo.getMetrics();
   console.log(`   Parsed ${calMetrics?.calendarRecordCount} calendar records in ${Date.now() - calStart}ms.`);
@@ -64,6 +61,12 @@ async function runIngest() {
   cache.set('pairs', Array.from(pairsMap.values()));
   cache.set('cal_metrics', calMetrics);
   cache.set('currencies', calMetrics?.availableCurrencies);
+  cache.set('data_source', {
+    kind: source.kind,
+    root: source.root,
+    label: source.label,
+    manifest: source.manifest,
+  });
 
   const totalTime = ((Date.now() - startTime) / 1000).toFixed(2);
   console.log(`\n=== Ingestion Completed Successfully in ${totalTime}s ===`);

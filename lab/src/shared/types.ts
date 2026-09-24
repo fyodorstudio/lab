@@ -17,7 +17,11 @@ export type EventFamily =
 export interface CalendarRawRow {
   eventId: string;
   valueId: string;
-  timestamp: number; // Unix seconds UTC
+  /**
+   * Numeric timestamp exported from MT5. MetaQuotes documents calendar times as
+   * trade-server time; this value must not be presented as verified UTC.
+   */
+  timestamp: number;
   currency: string;
   countryCode: string;
   eventName: string;
@@ -26,6 +30,24 @@ export interface CalendarRawRow {
   forecastRaw: string | null;
   previousRaw: string | null;
   revisedPreviousRaw: string | null;
+  sourceFile: string;
+  periodTimestamp: number | null;
+  revision: number | null;
+  impactType?: string;
+  eventCode?: string;
+  eventType?: string;
+  sector?: string;
+  frequency?: string;
+  timeMode?: string;
+  sourceUnit?: string;
+  multiplier?: string;
+  digits?: number | null;
+  sourceUrl?: string;
+  actualScaledIntegerRaw?: string | null;
+  forecastScaledIntegerRaw?: string | null;
+  previousScaledIntegerRaw?: string | null;
+  revisedPreviousScaledIntegerRaw?: string | null;
+  timestampConvention?: string;
 }
 
 export interface ParsedEventRelease {
@@ -37,6 +59,25 @@ export interface ParsedEventRelease {
   countryCode: string;
   eventName: string;
   normalizedEventName: string;
+  /** Stable source-series identity available in this export. */
+  eventSeriesKey: string;
+  periodTimestamp: number | null;
+  revision: number | null;
+  impactType?: string;
+  eventCode?: string;
+  eventType?: string;
+  sector?: string;
+  frequency?: string;
+  timeMode?: string;
+  sourceUnit?: string;
+  multiplier?: string;
+  digits?: number | null;
+  sourceUrl?: string;
+  actualScaledIntegerRaw?: string | null;
+  forecastScaledIntegerRaw?: string | null;
+  previousScaledIntegerRaw?: string | null;
+  revisedPreviousScaledIntegerRaw?: string | null;
+  timestampConvention?: string;
   eventFamily: EventFamily;
   importance: EventImportance | string;
 
@@ -58,6 +99,13 @@ export interface ParsedEventRelease {
   hasCompleteAFP: boolean;
   simultaneousReleaseCount: number;
   simultaneousEvents: string[];
+  simultaneousEventIdentities: Array<{
+    eventId: string;
+    valueId: string;
+    countryCode: string;
+    eventName: string;
+  }>;
+  sourceFile: string;
   unit?: string;
 }
 
@@ -95,6 +143,7 @@ export interface EventObservation extends ParsedEventRelease {
   rawReturns: Array<number | null>; // raw pair arithmetic returns: Pt/P0 - 1
 
   crossesWeekend: boolean;
+  crossesNonWeekendGap: boolean;
   isFridayRelease: boolean;
 }
 
@@ -186,6 +235,10 @@ export interface ScoreMatrixData {
 export interface PatternQueryFilters {
   currency: string;
   eventName: string;
+  /** MetaQuotes event_id. Required when a display name maps to multiple source series. */
+  eventId?: string;
+  /** Full source-series key, including MT5 revision/stage when available. */
+  eventSeriesKey?: string;
   pair?: string;
   horizon?: number; // Selected horizon for score matrix (default 1)
   scoringMode?: ScoringMode; // default 'retrospective'
@@ -211,6 +264,7 @@ export interface ResearchHealth {
   missingValueExclusions: number;
   simultaneousReleaseCount: number;
   weekendCrossingCount: number;
+  nonWeekendGapCount: number;
   fridayReleaseCount: number;
   pair: string;
   eventCurrencyPosition: 'base' | 'quote';

@@ -61,6 +61,12 @@ export const ResearchHealthPanel: React.FC<ResearchHealthPanelProps> = ({ health
           </span>
         </div>
         <div className="bg-slate-50 dark:bg-slate-950/60 p-2 rounded border border-slate-200 dark:border-slate-800">
+          <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-semibold">Non-Weekend Gaps</span>
+          <span className={health.nonWeekendGapCount > 0 ? 'text-amber-600 dark:text-amber-400 font-bold' : 'text-slate-800 dark:text-slate-200 font-semibold'}>
+            {health.nonWeekendGapCount}
+          </span>
+        </div>
+        <div className="bg-slate-50 dark:bg-slate-950/60 p-2 rounded border border-slate-200 dark:border-slate-800">
           <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-semibold">Currency Position</span>
           <span className="text-sky-600 dark:text-sky-400 font-bold capitalize">
             {health.eventCurrencyPosition} (Q={health.eventCurrencyPosition === 'base' ? '+1' : '-1'})

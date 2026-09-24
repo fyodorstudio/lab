@@ -4,7 +4,7 @@ export interface SimultaneousCluster {
   currency: string;
   timestamp: number;
   count: number;
-  events: Array<{ eventId: string; valueId: string; eventName: string }>;
+  events: Array<{ eventId: string; valueId: string; countryCode: string; eventName: string }>;
 }
 
 /**
@@ -29,6 +29,7 @@ export function detectSimultaneousReleases(rows: CalendarRawRow[]): Map<string, 
     cluster.events.push({
       eventId: row.eventId,
       valueId: row.valueId,
+      countryCode: row.countryCode,
       eventName: row.eventName,
     });
   }

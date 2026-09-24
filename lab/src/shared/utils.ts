@@ -144,8 +144,11 @@ export function createHistogramBins(values: number[], targetBinCount: number = 1
   return bins;
 }
 
-export function formatUtcDate(unixSeconds: number): string {
-  return new Date(unixSeconds * 1000).toISOString().replace('.000Z', 'Z');
+export function formatBrokerServerDateTime(unixSeconds: number): string {
+  // The integer is deliberately rendered without a timezone suffix. MT5
+  // calendar functions use trade-server time; the repository has no broker
+  // timezone metadata with which to convert this wall clock to verified UTC.
+  return new Date(unixSeconds * 1000).toISOString().replace('.000Z', '');
 }
 
 /**
@@ -170,8 +173,7 @@ export function calculatePercentileRank(
     }
   }
 
-  const pct = (count / sortedValues.length) * 100;
-  return Math.round(pct * 10) / 10;
+  return canonicalizeNumber((count / sortedValues.length) * 100);
 }
 
 /**
@@ -195,8 +197,7 @@ export function calculateStrictLowerPercentileRank(
     }
   }
 
-  const pct = (count / sortedValues.length) * 100;
-  return Math.round(pct * 10) / 10;
+  return canonicalizeNumber((count / sortedValues.length) * 100);
 }
 
 export interface TieMetrics {
@@ -233,9 +234,9 @@ export function calculateTieMetrics(
     }
   }
 
-  const lowerRank = Math.round((lowerCount / n) * 100 * 10) / 10;
-  const upperRank = Math.round((upperCount / n) * 100 * 10) / 10;
-  const tieRate = Math.round((tieCount / n) * 100 * 10) / 10;
+  const lowerRank = canonicalizeNumber((lowerCount / n) * 100)!;
+  const upperRank = canonicalizeNumber((upperCount / n) * 100)!;
+  const tieRate = canonicalizeNumber((tieCount / n) * 100)!;
 
   return {
     tieCount,

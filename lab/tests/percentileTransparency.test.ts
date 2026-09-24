@@ -116,7 +116,7 @@ describe('Percentile Transparency & Auditability Engine', () => {
       expect(p75Row?.threshold).not.toBeNull();
       expect(typeof p75Row?.threshold).toBe('number');
       expect(dist.surprise.thresholdDetails.percentile).toBe(75);
-      expect(dist.surprise.thresholdDetails.meaning).toContain('75% of historical');
+      expect(dist.surprise.thresholdDetails.meaning).toContain('linear interpolation');
       expect(dist.surprise.thresholdDetails.scoreBoundaryDescription).toContain('magnitude score');
     });
 

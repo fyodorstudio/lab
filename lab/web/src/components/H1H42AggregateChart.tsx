@@ -233,7 +233,7 @@ export const H1H42AggregateChart: React.FC<H1H42AggregateChartProps> = ({
           <div className="flex items-center space-x-3">
             <span className="font-bold text-sky-600 dark:text-sky-400">Selected Path:</span>
             <span>Event: #{selectedPath.eventId}</span>
-            {selectedPath.date && <span>Date: {selectedPath.date.slice(0, 16).replace('T', ' ')} UTC</span>}
+            {selectedPath.date && <span>Date: {selectedPath.date.slice(0, 16).replace('T', ' ')} broker server</span>}
             {selectedPath.p0 !== undefined && <span>P0: {selectedPath.p0?.toFixed(5)}</span>}
             {selectedPath.returns[0] !== null && (
               <span>H1: {(selectedPath.returns[0]! * 100).toFixed(2)}%</span>

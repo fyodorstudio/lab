@@ -8,6 +8,7 @@ import { CandleRepository } from '../data/candleLoader.js';
 import { discoverFXPairs } from '../data/pairDiscovery.js';
 import { AnalyticsService } from '../analytics/analyticsService.js';
 import { createApiRouter } from './routes.js';
+import { resolveResearchDataSource } from '../data/dataSourceResolver.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,23 +21,12 @@ async function startServer() {
   app.use(express.json({ limit: '10mb' }));
 
   const repoRoot = path.resolve(__dirname, '../../..');
-  const calendarPath = path.join(
-    repoRoot,
-    'raw_data',
-    'economic calendar',
-    'fyodor_calendar_master_history_repaired.csv'
-  );
-  const candlesDir = path.join(repoRoot, 'raw_data', 'fyodor_candles');
+  const source = resolveResearchDataSource(repoRoot);
+  const { calendarPath, candlesDir } = source;
 
-  const cacheDir = path.resolve(__dirname, '../../generated-cache');
-  if (!fs.existsSync(path.join(cacheDir, 'cal_metrics.json'))) {
-    console.log('[Notice] Pre-indexed cache not found in generated-cache/. Parsing directly from raw_data/. Run "npm run ingest" to pre-index.');
-  } else {
-    console.log('[Info] Pre-indexed metadata cache detected in generated-cache/.');
-  }
-
+  console.log(`Research source: ${source.label}`);
   console.log(`Loading calendar from: ${calendarPath}`);
-  const calendarRepo = new CalendarRepository(calendarPath);
+  const calendarRepo = new CalendarRepository(calendarPath, source.manifest);
   await calendarRepo.load();
 
   console.log(`Discovering FX pairs in: ${candlesDir}`);

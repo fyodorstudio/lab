@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { alignEventToCandles } from '../src/analytics/eventAligner.js';
+import { alignEventToCandles, gapCrossesWeekend } from '../src/analytics/eventAligner.js';
 import { CandleSeries } from '../src/data/candleLoader.js';
 
 describe('Event Aligner and H1-H42 Sequencer', () => {
@@ -88,12 +88,13 @@ describe('Event Aligner and H1-H42 Sequencer', () => {
 
   it('handles weekend gaps by counting available trading bars and setting crossesWeekend flag', () => {
     // Create a series with a 48-hour weekend gap between bar 10 and bar 11
+    const fridayBase = Date.UTC(2024, 0, 5, 12, 0, 0) / 1000;
     const timesWithWeekend: number[] = [];
     const opensW: number[] = [];
     const closesW: number[] = [];
 
     for (let i = 0; i < 50; i++) {
-      const t = i <= 10 ? baseTime + i * 3600 : baseTime + (i + 48) * 3600;
+      const t = i <= 10 ? fridayBase + i * 3600 : fridayBase + (i + 48) * 3600;
       timesWithWeekend.push(t);
       opensW.push(1.2000);
       closesW.push(1.2010);
@@ -108,10 +109,19 @@ describe('Event Aligner and H1-H42 Sequencer', () => {
       closes: closesW,
     };
 
-    const res = alignEventToCandles(baseTime, 'USD', 'EURUSD', weekendSeries);
+    const res = alignEventToCandles(fridayBase, 'USD', 'EURUSD', weekendSeries);
     expect(res.crossesWeekend).toBe(true);
     // Sequence continues with 42 available bars
     expect(res.returns[41]).not.toBeNull();
+  });
+
+  it('does not mislabel an ordinary weekday data gap as a weekend crossing', () => {
+    const monday = Date.UTC(2024, 0, 8, 9, 0, 0) / 1000;
+    expect(gapCrossesWeekend(monday, monday + 4 * 3600)).toBe(false);
+
+    const friday = Date.UTC(2024, 0, 5, 21, 0, 0) / 1000;
+    const sunday = Date.UTC(2024, 0, 7, 22, 0, 0) / 1000;
+    expect(gapCrossesWeekend(friday, sunday)).toBe(true);
   });
 
   it('handles missing candle data near end of dataset without interpolating or forward-filling', () => {
@@ -155,4 +165,3 @@ describe('Event Aligner and H1-H42 Sequencer', () => {
     expect(res.availableHorizonCount).toBe(0);
   });
 });
-

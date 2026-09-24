@@ -30,10 +30,16 @@ export interface FXPairInfo {
 }
 
 export interface EventListItem {
+  eventId: string;
+  eventSeriesKey: string;
+  revision: number | null;
+  countryCode: string;
   eventName: string;
   family: string;
   count: number;
   importance: string;
+  averageReleasesPerActiveMonth: number;
+  identityWarning?: string;
 }
 
 export interface DistributionStats {
@@ -127,6 +133,7 @@ export interface ResearchHealth {
   missingValueExclusions: number;
   simultaneousReleaseCount: number;
   weekendCrossingCount: number;
+  nonWeekendGapCount: number;
   fridayReleaseCount: number;
   pair: string;
   eventCurrencyPosition: 'base' | 'quote';
@@ -197,6 +204,7 @@ export interface EventObservation {
   logReturns?: Array<number | null>;
   rawReturns: Array<number | null>;
   crossesWeekend: boolean;
+  crossesNonWeekendGap: boolean;
   isFridayRelease: boolean;
 }
 
@@ -233,12 +241,16 @@ export async function fetchPairs(currency: string): Promise<FXPairInfo[]> {
 export async function fetchDistribution(
   currency: string,
   eventName: string,
-  percentile: number = 75
+  percentile: number = 75,
+  eventId?: string,
+  eventSeriesKey?: string
 ): Promise<{ surprise: DistributionResponse; momentum: DistributionResponse }> {
+  const eventIdParam = eventId ? `&eventId=${encodeURIComponent(eventId)}` : '';
+  const eventSeriesParam = eventSeriesKey ? `&eventSeriesKey=${encodeURIComponent(eventSeriesKey)}` : '';
   const res = await fetch(
     `${BASE_URL}/distribution?currency=${encodeURIComponent(currency)}&eventName=${encodeURIComponent(
       eventName
-    )}&percentile=${percentile}`
+    )}&percentile=${percentile}${eventIdParam}${eventSeriesParam}`
   );
   if (!res.ok) throw new Error(`Failed to fetch distribution: ${res.statusText}`);
   return res.json();

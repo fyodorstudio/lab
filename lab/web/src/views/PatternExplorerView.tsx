@@ -21,6 +21,10 @@ interface PatternExplorerViewProps {
   onCurrencyChange?: (c: string) => void;
   selectedEvent?: string;
   onEventChange?: (e: string) => void;
+  selectedEventId?: string;
+  onEventIdChange?: (eventId: string) => void;
+  selectedEventSeriesKey?: string;
+  onEventSeriesKeyChange?: (eventSeriesKey: string) => void;
   selectedPair?: string;
   onPairChange?: (p: string) => void;
   onPatternLoaded?: (pattern: PatternResponse) => void;
@@ -32,6 +36,10 @@ export const PatternExplorerView: React.FC<PatternExplorerViewProps> = ({
   onCurrencyChange,
   selectedEvent: externalEvent,
   onEventChange,
+  selectedEventId: externalEventId,
+  onEventIdChange,
+  selectedEventSeriesKey: externalEventSeriesKey,
+  onEventSeriesKeyChange,
   selectedPair: externalPair,
   onPairChange,
   onPatternLoaded,
@@ -43,6 +51,10 @@ export const PatternExplorerView: React.FC<PatternExplorerViewProps> = ({
   const [eventsList, setEventsList] = useState<EventListItem[]>([]);
   const [internalEvent, setInternalEvent] = useState('');
   const selectedEvent = externalEvent !== undefined ? externalEvent : internalEvent;
+  const [internalEventId, setInternalEventId] = useState('');
+  const selectedEventId = externalEventId !== undefined ? externalEventId : internalEventId;
+  const [internalEventSeriesKey, setInternalEventSeriesKey] = useState('');
+  const selectedEventSeriesKey = externalEventSeriesKey !== undefined ? externalEventSeriesKey : internalEventSeriesKey;
 
   const [pairsList, setPairsList] = useState<FXPairInfo[]>([]);
   const [internalPair, setInternalPair] = useState('EURUSD');
@@ -83,9 +95,15 @@ export const PatternExplorerView: React.FC<PatternExplorerViewProps> = ({
     else setInternalCurrency(c);
   };
 
-  const handleEventChange = (e: string) => {
-    if (onEventChange) onEventChange(e);
-    else setInternalEvent(e);
+  const handleEventChange = (eventSeriesKey: string) => {
+    const selected = eventsList.find((event) => event.eventSeriesKey === eventSeriesKey);
+    if (!selected) return;
+    if (onEventIdChange) onEventIdChange(selected.eventId);
+    else setInternalEventId(selected.eventId);
+    if (onEventSeriesKeyChange) onEventSeriesKeyChange(selected.eventSeriesKey);
+    else setInternalEventSeriesKey(selected.eventSeriesKey);
+    if (onEventChange) onEventChange(selected.eventName);
+    else setInternalEvent(selected.eventName);
   };
 
   const handlePairChange = (p: string) => {
@@ -99,9 +117,14 @@ export const PatternExplorerView: React.FC<PatternExplorerViewProps> = ({
     fetchEvents(selectedCurrency).then((events) => {
       setEventsList(events);
       if (events.length > 0) {
-        if (!selectedEvent || !events.some((e) => e.eventName === selectedEvent)) {
+        if (!selectedEventSeriesKey || !events.some((e) => e.eventSeriesKey === selectedEventSeriesKey)) {
           const def = events.find((e) => e.eventName.includes('CPI')) || events[0];
-          handleEventChange(def.eventName);
+          if (onEventIdChange) onEventIdChange(def.eventId);
+          else setInternalEventId(def.eventId);
+          if (onEventSeriesKeyChange) onEventSeriesKeyChange(def.eventSeriesKey);
+          else setInternalEventSeriesKey(def.eventSeriesKey);
+          if (onEventChange) onEventChange(def.eventName);
+          else setInternalEvent(def.eventName);
         }
       }
     });
@@ -118,11 +141,13 @@ export const PatternExplorerView: React.FC<PatternExplorerViewProps> = ({
 
   // Load pattern data when parameters change
   const loadPattern = () => {
-    if (!selectedCurrency || !selectedEvent) return;
+    if (!selectedCurrency || !selectedEvent || !selectedEventId || !selectedEventSeriesKey) return;
     setLoading(true);
     const query: any = {
       currency: selectedCurrency,
       eventName: selectedEvent,
+      eventId: selectedEventId,
+      eventSeriesKey: selectedEventSeriesKey,
       pair: selectedPair,
       horizon: selectedHorizon,
       surpriseScore: selectedSurpriseScore,
@@ -153,6 +178,8 @@ export const PatternExplorerView: React.FC<PatternExplorerViewProps> = ({
   }, [
     selectedCurrency,
     selectedEvent,
+    selectedEventId,
+    selectedEventSeriesKey,
     selectedPair,
     selectedSurpriseScore,
     selectedMomentumScore,
@@ -163,6 +190,8 @@ export const PatternExplorerView: React.FC<PatternExplorerViewProps> = ({
     simultaneousFilter,
     weekendFilter,
     requireCompleteAFP,
+    scoringMode,
+    minHistory,
   ]);
 
   return (
@@ -223,15 +252,15 @@ export const PatternExplorerView: React.FC<PatternExplorerViewProps> = ({
 
           {/* Exact Event */}
           <div className="lg:col-span-2">
-            <label className="text-slate-500 dark:text-slate-400 block mb-1 font-semibold">Exact Event Name:</label>
+            <label className="text-slate-500 dark:text-slate-400 block mb-1 font-semibold">Source Event Series:</label>
             <select
-              value={selectedEvent}
+              value={selectedEventSeriesKey}
               onChange={(e) => handleEventChange(e.target.value)}
               className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded px-2 py-1.5 text-slate-800 dark:text-slate-200 truncate font-medium"
             >
               {eventsList.map((ev) => (
-                <option key={ev.eventName} value={ev.eventName}>
-                  [{ev.count}] {ev.eventName}
+                <option key={ev.eventSeriesKey} value={ev.eventSeriesKey}>
+                  [{ev.count}] {ev.countryCode} · {ev.eventName} · ID {ev.eventId}{ev.revision !== null ? ` · rev ${ev.revision}` : ''}
                 </option>
               ))}
             </select>

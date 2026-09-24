@@ -1,0 +1,2585 @@
+{
+  "generatedAt": "2026-09-24T00:08:47.379Z",
+  "methodology": {
+    "quantile": "Hyndman-Fan type 7 / index=(N-1)*p with linear interpolation",
+    "rank": "strict-lower count(v < x) / N * 100 after 8-decimal canonicalization",
+    "population": "valid complete-A/F/P, nonzero absolute deltas within one MetaQuotes event_id + revision series",
+    "timestamp": "broker trade-server wall-clock; snapshot server-minus-GMT offset is manifested but historical DST offsets are not reconstructed"
+  },
+  "source": {
+    "path": "tools/mt5/FyodorResearchExport_v3_20260923_234930_server/calendar_releases.csv",
+    "sha256": "76062b8f6747d38b530d086780f2dfcf0b0bde59690bfdf4458c7519d4e6be2e",
+    "bytes": 55420500,
+    "rows": 123054,
+    "duplicateEventValueRows": 0,
+    "kind": "mt5-v3.1",
+    "label": "MT5 v3.1 export 20260923_234930",
+    "manifest": {
+      "schema_version": "fyodor-mt5-research-export/3.1.0",
+      "exporter_version": "3.1.0",
+      "csv_text_encoding": "RFC4180-style quoted UTF-8",
+      "export_id": "20260923_234930",
+      "export_root": "FyodorResearchExport_v3_20260923_234930_server",
+      "completed_elapsed_ms": "9969",
+      "snapshot_trade_server_timestamp": "1790207370",
+      "snapshot_trade_server_text": "2026.09.23 23:49:30",
+      "snapshot_gmt_timestamp": "1790196570",
+      "snapshot_gmt_text": "2026.09.23 20:49:30",
+      "trade_server_minus_gmt_seconds_snapshot": "10800",
+      "timestamp_convention": "trade_server_time",
+      "terminal_connected": "true",
+      "terminal_company": "MetaQuotes Ltd.",
+      "terminal_name": "MetaTrader 5",
+      "terminal_language": "English",
+      "terminal_build": "6182",
+      "terminal_max_bars": "100000000",
+      "account_company": "Elev8 Markets Ltd.",
+      "account_server": "Elev8-Demo2",
+      "privacy_note": "Account login and client name intentionally not exported.",
+      "save_to_common_folder": "true",
+      "storage_scope": "Terminal/Common/Files",
+      "export_calendar": "true",
+      "calendar_currencies": "USD,EUR,GBP,JPY,AUD,CAD,CHF,NZD",
+      "calendar_from_timestamp": "1420070400",
+      "calendar_from_server_text": "2015.01.01 00:00:00",
+      "calendar_to_timestamp": "1790207370",
+      "calendar_to_server_text": "2026.09.23 23:49:30",
+      "calendar_events_exported": "1051",
+      "calendar_releases_exported": "123054",
+      "calendar_country_lookup_failures": "0",
+      "calendar_event_query_failures": "0",
+      "calendar_value_query_failures": "0",
+      "calendar_event_id_mismatches": "0",
+      "calendar_completed": "true",
+      "export_market_watch_bars": "true",
+      "candle_timeframe": "PERIOD_H1",
+      "candle_from_timestamp": "1420070400",
+      "candle_from_server_text": "2015.01.01 00:00:00",
+      "candle_to_timestamp": "1790207370",
+      "candle_to_server_text": "2026.09.23 23:49:30",
+      "exclude_incomplete_bar": "true",
+      "export_only_forex_symbols": "true",
+      "market_watch_symbols_seen": "279",
+      "market_watch_symbols_skipped_non_forex": "228",
+      "candle_symbols_exported": "51",
+      "candle_symbols_failed": "0",
+      "candle_bars_exported": "1686617",
+      "candles_completed": "true",
+      "request_retries": "3",
+      "retry_delay_milliseconds": "1000",
+      "stop_on_calendar_error": "false",
+      "checksum_note": "Compute SHA-256 for every output file immediately after copying the folder from MT5."
+    }
+  },
+  "candleIntegrity": {
+    "pairCount": 51,
+    "totalRows": 1686617,
+    "totals": {
+      "duplicateTimestamps": 0,
+      "outOfOrderTimestamps": 0,
+      "nonHourlyTimestamps": 0,
+      "weekendGaps": 14202,
+      "nonWeekendGaps": 1288,
+      "invalidOhlcRows": 0
+    },
+    "byPair": [
+      {
+        "pair": "AUDCAD",
+        "rows": 72967,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 612,
+        "nonWeekendGaps": 15,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "AUDCHF",
+        "rows": 72970,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 612,
+        "nonWeekendGaps": 15,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "AUDJPY",
+        "rows": 72974,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 612,
+        "nonWeekendGaps": 18,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "AUDNZD",
+        "rows": 72980,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 612,
+        "nonWeekendGaps": 15,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "AUDUSD",
+        "rows": 72979,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 612,
+        "nonWeekendGaps": 16,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "CADCHF",
+        "rows": 5140,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 43,
+        "nonWeekendGaps": 2,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "CADJPY",
+        "rows": 5134,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 43,
+        "nonWeekendGaps": 2,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "CHFJPY",
+        "rows": 72966,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 612,
+        "nonWeekendGaps": 15,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "EURAUD",
+        "rows": 72977,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 612,
+        "nonWeekendGaps": 16,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "EURCAD",
+        "rows": 72979,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 612,
+        "nonWeekendGaps": 16,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "EURCHF",
+        "rows": 72688,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 609,
+        "nonWeekendGaps": 18,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "EURGBP",
+        "rows": 72979,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 612,
+        "nonWeekendGaps": 16,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "EURHKD",
+        "rows": 8489,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 75,
+        "nonWeekendGaps": 13,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "EURHUF",
+        "rows": 10088,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 86,
+        "nonWeekendGaps": 68,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "EURJPY",
+        "rows": 72978,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 612,
+        "nonWeekendGaps": 16,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "EURMXN",
+        "rows": 5134,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 43,
+        "nonWeekendGaps": 2,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "EURNOK",
+        "rows": 10160,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 86,
+        "nonWeekendGaps": 7,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "EURNZD",
+        "rows": 72961,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 612,
+        "nonWeekendGaps": 20,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "EURPLN",
+        "rows": 10152,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 86,
+        "nonWeekendGaps": 17,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "EURSEK",
+        "rows": 10221,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 86,
+        "nonWeekendGaps": 3,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "EURTRY",
+        "rows": 9924,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 85,
+        "nonWeekendGaps": 5,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "EURUSD",
+        "rows": 72967,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 612,
+        "nonWeekendGaps": 19,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "EURZAR",
+        "rows": 4279,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 43,
+        "nonWeekendGaps": 170,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "GBPAUD",
+        "rows": 5134,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 43,
+        "nonWeekendGaps": 2,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "GBPCAD",
+        "rows": 5134,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 43,
+        "nonWeekendGaps": 2,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "GBPCHF",
+        "rows": 72969,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 612,
+        "nonWeekendGaps": 16,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "GBPJPY",
+        "rows": 5097,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 43,
+        "nonWeekendGaps": 43,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "GBPMXN",
+        "rows": 5134,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 43,
+        "nonWeekendGaps": 2,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "GBPNZD",
+        "rows": 5133,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 43,
+        "nonWeekendGaps": 3,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "GBPUSD",
+        "rows": 72959,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 612,
+        "nonWeekendGaps": 18,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "GBPZAR",
+        "rows": 4279,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 43,
+        "nonWeekendGaps": 170,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "NZDCAD",
+        "rows": 5134,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 43,
+        "nonWeekendGaps": 2,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "NZDCHF",
+        "rows": 5134,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 43,
+        "nonWeekendGaps": 2,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "NZDJPY",
+        "rows": 5134,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 43,
+        "nonWeekendGaps": 2,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "NZDUSD",
+        "rows": 72916,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 612,
+        "nonWeekendGaps": 17,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "SGDJPY",
+        "rows": 10214,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 86,
+        "nonWeekendGaps": 3,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "USDCAD",
+        "rows": 72979,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 612,
+        "nonWeekendGaps": 16,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "USDCHF",
+        "rows": 72953,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 612,
+        "nonWeekendGaps": 10,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "USDCNH",
+        "rows": 4401,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 43,
+        "nonWeekendGaps": 101,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "USDCZK",
+        "rows": 10167,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 86,
+        "nonWeekendGaps": 4,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "USDDKK",
+        "rows": 10218,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 86,
+        "nonWeekendGaps": 0,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "USDHKD",
+        "rows": 32797,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 281,
+        "nonWeekendGaps": 46,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "USDHUF",
+        "rows": 10179,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 86,
+        "nonWeekendGaps": 4,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "USDJPY",
+        "rows": 72900,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 612,
+        "nonWeekendGaps": 94,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "USDMXN",
+        "rows": 5125,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 43,
+        "nonWeekendGaps": 3,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "USDNOK",
+        "rows": 10218,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 86,
+        "nonWeekendGaps": 0,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "USDPLN",
+        "rows": 10169,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 86,
+        "nonWeekendGaps": 5,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "USDSEK",
+        "rows": 29298,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 251,
+        "nonWeekendGaps": 24,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "USDSGD",
+        "rows": 29303,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 251,
+        "nonWeekendGaps": 22,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "USDTRY",
+        "rows": 10174,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 86,
+        "nonWeekendGaps": 3,
+        "invalidOhlcRows": 0
+      },
+      {
+        "pair": "USDZAR",
+        "rows": 4279,
+        "duplicateTimestamps": 0,
+        "outOfOrderTimestamps": 0,
+        "nonHourlyTimestamps": 0,
+        "weekendGaps": 43,
+        "nonWeekendGaps": 170,
+        "invalidOhlcRows": 0
+      }
+    ]
+  },
+  "eurPmiIdentityAudit": {
+    "pooledDisplayNameRows": 1122,
+    "pooledActiveMonths": 141,
+    "byEventSeries": [
+      {
+        "eventSeriesKey": "EUR:DE:276500001:r0",
+        "eventId": "276500001",
+        "revision": 0,
+        "countryCode": "DE",
+        "rows": 1,
+        "activeMonths": 1,
+        "releasesPerActiveMonth": 1,
+        "completeAFP": 0
+      },
+      {
+        "eventSeriesKey": "EUR:DE:276500001:r1",
+        "eventId": "276500001",
+        "revision": 1,
+        "countryCode": "DE",
+        "rows": 140,
+        "activeMonths": 140,
+        "releasesPerActiveMonth": 1,
+        "completeAFP": 91
+      },
+      {
+        "eventSeriesKey": "EUR:DE:276500001:r3",
+        "eventId": "276500001",
+        "revision": 3,
+        "countryCode": "DE",
+        "rows": 140,
+        "activeMonths": 140,
+        "releasesPerActiveMonth": 1,
+        "completeAFP": 91
+      },
+      {
+        "eventSeriesKey": "EUR:ES:724500001:r0",
+        "eventId": "724500001",
+        "revision": 0,
+        "countryCode": "ES",
+        "rows": 90,
+        "activeMonths": 90,
+        "releasesPerActiveMonth": 1,
+        "completeAFP": 89
+      },
+      {
+        "eventSeriesKey": "EUR:ES:724500001:r3",
+        "eventId": "724500001",
+        "revision": 3,
+        "countryCode": "ES",
+        "rows": 50,
+        "activeMonths": 50,
+        "releasesPerActiveMonth": 1,
+        "completeAFP": 1
+      },
+      {
+        "eventSeriesKey": "EUR:EU:999500001:r1",
+        "eventId": "999500001",
+        "revision": 1,
+        "countryCode": "EU",
+        "rows": 140,
+        "activeMonths": 140,
+        "releasesPerActiveMonth": 1,
+        "completeAFP": 109
+      },
+      {
+        "eventSeriesKey": "EUR:EU:999500001:r3",
+        "eventId": "999500001",
+        "revision": 3,
+        "countryCode": "EU",
+        "rows": 140,
+        "activeMonths": 140,
+        "releasesPerActiveMonth": 1,
+        "completeAFP": 110
+      },
+      {
+        "eventSeriesKey": "EUR:FR:250500001:r1",
+        "eventId": "250500001",
+        "revision": 1,
+        "countryCode": "FR",
+        "rows": 140,
+        "activeMonths": 140,
+        "releasesPerActiveMonth": 1,
+        "completeAFP": 90
+      },
+      {
+        "eventSeriesKey": "EUR:FR:250500001:r3",
+        "eventId": "250500001",
+        "revision": 3,
+        "countryCode": "FR",
+        "rows": 140,
+        "activeMonths": 140,
+        "releasesPerActiveMonth": 1,
+        "completeAFP": 91
+      },
+      {
+        "eventSeriesKey": "EUR:IT:380500001:r0",
+        "eventId": "380500001",
+        "revision": 0,
+        "countryCode": "IT",
+        "rows": 91,
+        "activeMonths": 91,
+        "releasesPerActiveMonth": 1,
+        "completeAFP": 89
+      },
+      {
+        "eventSeriesKey": "EUR:IT:380500001:r3",
+        "eventId": "380500001",
+        "revision": 3,
+        "countryCode": "IT",
+        "rows": 50,
+        "activeMonths": 50,
+        "releasesPerActiveMonth": 1,
+        "completeAFP": 2
+      }
+    ],
+    "finding": "The v3.1 period/revision fields split each MetaQuotes event_id into source-declared revision/stage series. These identities are used independently throughout the analytics pipeline."
+  },
+  "externalCrossChecks": [
+    {
+      "eventId": "840030005",
+      "valueId": "229745",
+      "field": "actual",
+      "rawValue": 0.2,
+      "externalValue": 0.2,
+      "classification": "Actual matches official BLS July 2025 CPI release",
+      "source": "https://www.bls.gov/news.release/archives/cpi_08122025.htm"
+    },
+    {
+      "eventId": "840030005",
+      "valueId": "229745",
+      "field": "forecast",
+      "rawValue": 0.6,
+      "externalValue": 0.2,
+      "classification": "Forecast discrepancy; cause unknown (provider consensus difference vs repair/extraction defect cannot be resolved from repository)",
+      "source": "Reuters poll reported by https://www.investing.com/news/economy/us-inflation-rises-in-july-in-line-with-expectations-4185127"
+    },
+    {
+      "eventId": "840010001",
+      "valueId": "115719",
+      "field": "actual",
+      "rawValue": 0.3,
+      "externalValue": 0.3,
+      "classification": "Actual matches official BEA August 2020 core PCE price index release",
+      "source": "https://www.bea.gov/news/2020/personal-income-and-outlays-august-2020"
+    }
+  ],
+  "cases": [
+    {
+      "identity": {
+        "eventSeriesKey": "USD:US:840030005:r0",
+        "eventId": "840030005",
+        "valueId": "229745",
+        "countryCode": "US",
+        "currency": "USD",
+        "eventName": "CPI m/m",
+        "periodTimestamp": 1751328000,
+        "revision": 0,
+        "sourceFile": "calendar_releases.csv"
+      },
+      "raw": {
+        "timestamp": 1755012600,
+        "brokerServerDateTime": "2025-08-12T15:30:00",
+        "actualRaw": "0.2",
+        "forecastRaw": "0.6",
+        "previousRaw": "0.3",
+        "revisedPreviousRaw": null
+      },
+      "parsed": {
+        "actual": 0.2,
+        "forecast": 0.6,
+        "previous": 0.3,
+        "revisedPrevious": null,
+        "surpriseDelta": -0.39999999999999997,
+        "surpriseAbsDelta": 0.39999999999999997,
+        "momentumDelta": -0.09999999999999998,
+        "momentumAbsDelta": 0.09999999999999998
+      },
+      "simultaneous": {
+        "count": 11,
+        "others": [
+          {
+            "eventId": "840030006",
+            "valueId": "229757",
+            "countryCode": "US",
+            "eventName": "Core CPI m/m"
+          },
+          {
+            "eventId": "840030007",
+            "valueId": "229769",
+            "countryCode": "US",
+            "eventName": "CPI y/y"
+          },
+          {
+            "eventId": "840030008",
+            "valueId": "229781",
+            "countryCode": "US",
+            "eventName": "Core CPI y/y"
+          },
+          {
+            "eventId": "840030009",
+            "valueId": "229793",
+            "countryCode": "US",
+            "eventName": "CPI n.s.a."
+          },
+          {
+            "eventId": "840030010",
+            "valueId": "229805",
+            "countryCode": "US",
+            "eventName": "Core CPI"
+          },
+          {
+            "eventId": "840030030",
+            "valueId": "230013",
+            "countryCode": "US",
+            "eventName": "Real Earnings m/m"
+          },
+          {
+            "eventId": "840030033",
+            "valueId": "230049",
+            "countryCode": "US",
+            "eventName": "CPI n.s.a. m/m"
+          },
+          {
+            "eventId": "840030034",
+            "valueId": "230061",
+            "countryCode": "US",
+            "eventName": "Core CPI n.s.a. m/m"
+          },
+          {
+            "eventId": "840030035",
+            "valueId": "230073",
+            "countryCode": "US",
+            "eventName": "CPI"
+          },
+          {
+            "eventId": "840030036",
+            "valueId": "230085",
+            "countryCode": "US",
+            "eventName": "Core CPI n.s.a."
+          }
+        ]
+      },
+      "retrospective": {
+        "referenceCutoff": "full source event_id + revision history",
+        "surprise": {
+          "n": 97,
+          "p75Type7": 0.4,
+          "strictLowerCount": 69,
+          "strictLowerRank": 71.13402062,
+          "tieCount": 10,
+          "tieRatePct": 10.30927835,
+          "lowerRank": 71.13402062,
+          "upperRank": 81.44329897,
+          "independentScore": -2,
+          "engineThreshold": 0.4,
+          "engineRank": 71.13402062,
+          "engineTieCount": 10,
+          "engineScore": -2
+        },
+        "momentum": {
+          "n": 97,
+          "p75Type7": 0.3,
+          "strictLowerCount": 0,
+          "strictLowerRank": 0,
+          "tieCount": 33,
+          "tieRatePct": 34.02061856,
+          "lowerRank": 0,
+          "upperRank": 34.02061856,
+          "independentScore": -2,
+          "engineThreshold": 0.3,
+          "engineRank": 0,
+          "engineTieCount": 33,
+          "engineScore": -2
+        }
+      },
+      "walkForward": {
+        "referenceCutoff": "timestamp < 1755012600",
+        "surprise": {
+          "n": 90,
+          "p75Type7": 0.4,
+          "strictLowerCount": 66,
+          "strictLowerRank": 73.33333333,
+          "tieCount": 8,
+          "tieRatePct": 8.88888889,
+          "lowerRank": 73.33333333,
+          "upperRank": 82.22222222,
+          "independentScore": -2,
+          "engineThreshold": 0.4,
+          "engineRank": 73.33333333,
+          "engineTieCount": 8,
+          "engineScore": -2
+        },
+        "momentum": {
+          "n": 87,
+          "p75Type7": 0.3,
+          "strictLowerCount": 0,
+          "strictLowerRank": 0,
+          "tieCount": 29,
+          "tieRatePct": 33.33333333,
+          "lowerRank": 0,
+          "upperRank": 33.33333333,
+          "independentScore": -2,
+          "engineThreshold": 0.3,
+          "engineRank": 0,
+          "engineTieCount": 29,
+          "engineScore": -2
+        }
+      },
+      "independentPrices": {
+        "position": "quote",
+        "p0Index": 66024,
+        "p0Timestamp": 1755014400,
+        "p0": 1.1642,
+        "priorCandle": {
+          "timestamp": 1755010800,
+          "open": 1.16048,
+          "close": 1.1642
+        },
+        "horizons": [
+          {
+            "horizon": 1,
+            "closeTimestamp": 1755014400,
+            "close": 1.1652,
+            "rawPairSimpleReturn": 0.0008589589417626886,
+            "eventCurrencySimpleReturn": -0.000858221764504008,
+            "normalizedLogReturn": -0.0008585902476445056
+          },
+          {
+            "horizon": 2,
+            "closeTimestamp": 1755018000,
+            "close": 1.16577,
+            "rawPairSimpleReturn": 0.0013485655385672146,
+            "eventCurrencySimpleReturn": -0.0013467493587929757,
+            "normalizedLogReturn": -0.001347657040748818
+          },
+          {
+            "horizon": 4,
+            "closeTimestamp": 1755025200,
+            "close": 1.16795,
+            "rawPairSimpleReturn": 0.0032210960316099158,
+            "eventCurrencySimpleReturn": -0.003210753885012352,
+            "normalizedLogReturn": -0.003215919415061409
+          },
+          {
+            "horizon": 12,
+            "closeTimestamp": 1755054000,
+            "close": 1.16796,
+            "rawPairSimpleReturn": 0.003229685621027434,
+            "eventCurrencySimpleReturn": -0.0032192883317924137,
+            "normalizedLogReturn": -0.003224481388767533
+          },
+          {
+            "horizon": 24,
+            "closeTimestamp": 1755097200,
+            "close": 1.16986,
+            "rawPairSimpleReturn": 0.004861707610376298,
+            "eventCurrencySimpleReturn": -0.0048381857658181815,
+            "normalizedLogReturn": -0.004849927674904678
+          },
+          {
+            "horizon": 42,
+            "closeTimestamp": 1755162000,
+            "close": 1.16848,
+            "rawPairSimpleReturn": 0.0036763442707439253,
+            "eventCurrencySimpleReturn": -0.003662878269204528,
+            "normalizedLogReturn": -0.0036696030341645597
+          }
+        ]
+      },
+      "enginePriceCheck": {
+        "p0Timestamp": 1755014400,
+        "p0": 1.1642,
+        "horizons": [
+          {
+            "horizon": 1,
+            "rawPairSimpleReturn": 0.0008589589417626886,
+            "eventCurrencySimpleReturn": -0.000858221764504008,
+            "normalizedLogReturn": -0.0008585902476445056
+          },
+          {
+            "horizon": 2,
+            "rawPairSimpleReturn": 0.0013485655385672146,
+            "eventCurrencySimpleReturn": -0.0013467493587929757,
+            "normalizedLogReturn": -0.001347657040748818
+          },
+          {
+            "horizon": 4,
+            "rawPairSimpleReturn": 0.0032210960316099158,
+            "eventCurrencySimpleReturn": -0.003210753885012352,
+            "normalizedLogReturn": -0.003215919415061409
+          },
+          {
+            "horizon": 12,
+            "rawPairSimpleReturn": 0.003229685621027434,
+            "eventCurrencySimpleReturn": -0.0032192883317924137,
+            "normalizedLogReturn": -0.003224481388767533
+          },
+          {
+            "horizon": 24,
+            "rawPairSimpleReturn": 0.004861707610376298,
+            "eventCurrencySimpleReturn": -0.0048381857658181815,
+            "normalizedLogReturn": -0.004849927674904678
+          },
+          {
+            "horizon": 42,
+            "rawPairSimpleReturn": 0.0036763442707439253,
+            "eventCurrencySimpleReturn": -0.003662878269204528,
+            "normalizedLogReturn": -0.0036696030341645597
+          }
+        ],
+        "crossesWeekend": false,
+        "crossesNonWeekendGap": false
+      }
+    },
+    {
+      "identity": {
+        "eventSeriesKey": "USD:US:840030005:r0",
+        "eventId": "840030005",
+        "valueId": "229744",
+        "countryCode": "US",
+        "currency": "USD",
+        "eventName": "CPI m/m",
+        "periodTimestamp": 1748736000,
+        "revision": 0,
+        "sourceFile": "calendar_releases.csv"
+      },
+      "raw": {
+        "timestamp": 1752593400,
+        "brokerServerDateTime": "2025-07-15T15:30:00",
+        "actualRaw": "0.3",
+        "forecastRaw": "-0.3",
+        "previousRaw": "0.1",
+        "revisedPreviousRaw": null
+      },
+      "parsed": {
+        "actual": 0.3,
+        "forecast": -0.3,
+        "previous": 0.1,
+        "revisedPrevious": null,
+        "surpriseDelta": 0.6,
+        "surpriseAbsDelta": 0.6,
+        "momentumDelta": 0.19999999999999998,
+        "momentumAbsDelta": 0.19999999999999998
+      },
+      "simultaneous": {
+        "count": 12,
+        "others": [
+          {
+            "eventId": "840030006",
+            "valueId": "229756",
+            "countryCode": "US",
+            "eventName": "Core CPI m/m"
+          },
+          {
+            "eventId": "840030007",
+            "valueId": "229768",
+            "countryCode": "US",
+            "eventName": "CPI y/y"
+          },
+          {
+            "eventId": "840030008",
+            "valueId": "229780",
+            "countryCode": "US",
+            "eventName": "Core CPI y/y"
+          },
+          {
+            "eventId": "840030009",
+            "valueId": "229792",
+            "countryCode": "US",
+            "eventName": "CPI n.s.a."
+          },
+          {
+            "eventId": "840030010",
+            "valueId": "229804",
+            "countryCode": "US",
+            "eventName": "Core CPI"
+          },
+          {
+            "eventId": "840030030",
+            "valueId": "230012",
+            "countryCode": "US",
+            "eventName": "Real Earnings m/m"
+          },
+          {
+            "eventId": "840030033",
+            "valueId": "230048",
+            "countryCode": "US",
+            "eventName": "CPI n.s.a. m/m"
+          },
+          {
+            "eventId": "840030034",
+            "valueId": "230060",
+            "countryCode": "US",
+            "eventName": "Core CPI n.s.a. m/m"
+          },
+          {
+            "eventId": "840030035",
+            "valueId": "230072",
+            "countryCode": "US",
+            "eventName": "CPI"
+          },
+          {
+            "eventId": "840030036",
+            "valueId": "230084",
+            "countryCode": "US",
+            "eventName": "Core CPI n.s.a."
+          },
+          {
+            "eventId": "840230001",
+            "valueId": "259138",
+            "countryCode": "US",
+            "eventName": "NY Fed Empire State Manufacturing Index"
+          }
+        ]
+      },
+      "retrospective": {
+        "referenceCutoff": "full source event_id + revision history",
+        "surprise": {
+          "n": 97,
+          "p75Type7": 0.4,
+          "strictLowerCount": 87,
+          "strictLowerRank": 89.69072165,
+          "tieCount": 4,
+          "tieRatePct": 4.12371134,
+          "lowerRank": 89.69072165,
+          "upperRank": 93.81443299,
+          "independentScore": 3,
+          "engineThreshold": 0.4,
+          "engineRank": 89.69072165,
+          "engineTieCount": 4,
+          "engineScore": 3
+        },
+        "momentum": {
+          "n": 97,
+          "p75Type7": 0.3,
+          "strictLowerCount": 33,
+          "strictLowerRank": 34.02061856,
+          "tieCount": 21,
+          "tieRatePct": 21.64948454,
+          "lowerRank": 34.02061856,
+          "upperRank": 55.67010309,
+          "independentScore": 2,
+          "engineThreshold": 0.3,
+          "engineRank": 34.02061856,
+          "engineTieCount": 21,
+          "engineScore": 2
+        }
+      },
+      "walkForward": {
+        "referenceCutoff": "timestamp < 1752593400",
+        "surprise": {
+          "n": 89,
+          "p75Type7": 0.4,
+          "strictLowerCount": 82,
+          "strictLowerRank": 92.13483146,
+          "tieCount": 2,
+          "tieRatePct": 2.24719101,
+          "lowerRank": 92.13483146,
+          "upperRank": 94.38202247,
+          "independentScore": 3,
+          "engineThreshold": 0.4,
+          "engineRank": 92.13483146,
+          "engineTieCount": 2,
+          "engineScore": 3
+        },
+        "momentum": {
+          "n": 86,
+          "p75Type7": 0.3,
+          "strictLowerCount": 29,
+          "strictLowerRank": 33.72093023,
+          "tieCount": 19,
+          "tieRatePct": 22.09302326,
+          "lowerRank": 33.72093023,
+          "upperRank": 55.81395349,
+          "independentScore": 2,
+          "engineThreshold": 0.3,
+          "engineRank": 33.72093023,
+          "engineTieCount": 19,
+          "engineScore": 2
+        }
+      },
+      "independentPrices": {
+        "position": "base",
+        "p0Index": 65539,
+        "p0Timestamp": 1752595200,
+        "p0": 147.885,
+        "priorCandle": {
+          "timestamp": 1752591600,
+          "open": 147.906,
+          "close": 147.885
+        },
+        "horizons": [
+          {
+            "horizon": 1,
+            "closeTimestamp": 1752595200,
+            "close": 148.573,
+            "rawPairSimpleReturn": 0.00465226358318982,
+            "eventCurrencySimpleReturn": 0.00465226358318982,
+            "normalizedLogReturn": 0.004641475252132537
+          },
+          {
+            "horizon": 2,
+            "closeTimestamp": 1752598800,
+            "close": 148.808,
+            "rawPairSimpleReturn": 0.006241336173377965,
+            "eventCurrencySimpleReturn": 0.006241336173377965,
+            "normalizedLogReturn": 0.00622193969953537
+          },
+          {
+            "horizon": 4,
+            "closeTimestamp": 1752606000,
+            "close": 148.886,
+            "rawPairSimpleReturn": 0.006768773033100084,
+            "eventCurrencySimpleReturn": 0.006768773033100084,
+            "normalizedLogReturn": 0.006745967740308383
+          },
+          {
+            "horizon": 12,
+            "closeTimestamp": 1752634800,
+            "close": 148.97,
+            "rawPairSimpleReturn": 0.007336781958954708,
+            "eventCurrencySimpleReturn": 0.007336781958954708,
+            "normalizedLogReturn": 0.0073099986963873435
+          },
+          {
+            "horizon": 24,
+            "closeTimestamp": 1752678000,
+            "close": 148.696,
+            "rawPairSimpleReturn": 0.005483990938905281,
+            "eventCurrencySimpleReturn": 0.005483990938905281,
+            "normalizedLogReturn": 0.005469008610937514
+          },
+          {
+            "horizon": 42,
+            "closeTimestamp": 1752746400,
+            "close": 148.714,
+            "rawPairSimpleReturn": 0.005605707137302796,
+            "eventCurrencySimpleReturn": 0.005605707137302796,
+            "normalizedLogReturn": 0.005590053633108889
+          }
+        ]
+      },
+      "enginePriceCheck": {
+        "p0Timestamp": 1752595200,
+        "p0": 147.885,
+        "horizons": [
+          {
+            "horizon": 1,
+            "rawPairSimpleReturn": 0.00465226358318982,
+            "eventCurrencySimpleReturn": 0.00465226358318982,
+            "normalizedLogReturn": 0.004641475252132537
+          },
+          {
+            "horizon": 2,
+            "rawPairSimpleReturn": 0.006241336173377965,
+            "eventCurrencySimpleReturn": 0.006241336173377965,
+            "normalizedLogReturn": 0.00622193969953537
+          },
+          {
+            "horizon": 4,
+            "rawPairSimpleReturn": 0.006768773033100084,
+            "eventCurrencySimpleReturn": 0.006768773033100084,
+            "normalizedLogReturn": 0.006745967740308383
+          },
+          {
+            "horizon": 12,
+            "rawPairSimpleReturn": 0.007336781958954708,
+            "eventCurrencySimpleReturn": 0.007336781958954708,
+            "normalizedLogReturn": 0.0073099986963873435
+          },
+          {
+            "horizon": 24,
+            "rawPairSimpleReturn": 0.005483990938905281,
+            "eventCurrencySimpleReturn": 0.005483990938905281,
+            "normalizedLogReturn": 0.005469008610937514
+          },
+          {
+            "horizon": 42,
+            "rawPairSimpleReturn": 0.005605707137302796,
+            "eventCurrencySimpleReturn": 0.005605707137302796,
+            "normalizedLogReturn": 0.005590053633108889
+          }
+        ],
+        "crossesWeekend": false,
+        "crossesNonWeekendGap": true
+      }
+    },
+    {
+      "identity": {
+        "eventSeriesKey": "USD:US:840030005:r0",
+        "eventId": "840030005",
+        "valueId": "229741",
+        "countryCode": "US",
+        "currency": "USD",
+        "eventName": "CPI m/m",
+        "periodTimestamp": 1740787200,
+        "revision": 0,
+        "sourceFile": "calendar_releases.csv"
+      },
+      "raw": {
+        "timestamp": 1744299000,
+        "brokerServerDateTime": "2025-04-10T15:30:00",
+        "actualRaw": "-0.1",
+        "forecastRaw": "0.4",
+        "previousRaw": "0.2",
+        "revisedPreviousRaw": null
+      },
+      "parsed": {
+        "actual": -0.1,
+        "forecast": 0.4,
+        "previous": 0.2,
+        "revisedPrevious": null,
+        "surpriseDelta": -0.5,
+        "surpriseAbsDelta": 0.5,
+        "momentumDelta": -0.30000000000000004,
+        "momentumAbsDelta": 0.30000000000000004
+      },
+      "simultaneous": {
+        "count": 14,
+        "others": [
+          {
+            "eventId": "840030006",
+            "valueId": "229753",
+            "countryCode": "US",
+            "eventName": "Core CPI m/m"
+          },
+          {
+            "eventId": "840030007",
+            "valueId": "229765",
+            "countryCode": "US",
+            "eventName": "CPI y/y"
+          },
+          {
+            "eventId": "840030008",
+            "valueId": "229777",
+            "countryCode": "US",
+            "eventName": "Core CPI y/y"
+          },
+          {
+            "eventId": "840030009",
+            "valueId": "229789",
+            "countryCode": "US",
+            "eventName": "CPI n.s.a."
+          },
+          {
+            "eventId": "840030010",
+            "valueId": "229801",
+            "countryCode": "US",
+            "eventName": "Core CPI"
+          },
+          {
+            "eventId": "840030030",
+            "valueId": "230009",
+            "countryCode": "US",
+            "eventName": "Real Earnings m/m"
+          },
+          {
+            "eventId": "840030033",
+            "valueId": "230045",
+            "countryCode": "US",
+            "eventName": "CPI n.s.a. m/m"
+          },
+          {
+            "eventId": "840030034",
+            "valueId": "230057",
+            "countryCode": "US",
+            "eventName": "Core CPI n.s.a. m/m"
+          },
+          {
+            "eventId": "840030035",
+            "valueId": "230069",
+            "countryCode": "US",
+            "eventName": "CPI"
+          },
+          {
+            "eventId": "840030036",
+            "valueId": "230081",
+            "countryCode": "US",
+            "eventName": "Core CPI n.s.a."
+          },
+          {
+            "eventId": "840140001",
+            "valueId": "250063",
+            "countryCode": "US",
+            "eventName": "Initial Jobless Claims"
+          },
+          {
+            "eventId": "840140002",
+            "valueId": "250067",
+            "countryCode": "US",
+            "eventName": "Continuing Jobless Claims"
+          },
+          {
+            "eventId": "840140003",
+            "valueId": "250071",
+            "countryCode": "US",
+            "eventName": "Initial Jobless Claims 4-Week Average"
+          }
+        ]
+      },
+      "retrospective": {
+        "referenceCutoff": "full source event_id + revision history",
+        "surprise": {
+          "n": 97,
+          "p75Type7": 0.4,
+          "strictLowerCount": 79,
+          "strictLowerRank": 81.44329897,
+          "tieCount": 8,
+          "tieRatePct": 8.24742268,
+          "lowerRank": 81.44329897,
+          "upperRank": 89.69072165,
+          "independentScore": -3,
+          "engineThreshold": 0.4,
+          "engineRank": 81.44329897,
+          "engineTieCount": 8,
+          "engineScore": -3
+        },
+        "momentum": {
+          "n": 97,
+          "p75Type7": 0.3,
+          "strictLowerCount": 54,
+          "strictLowerRank": 55.67010309,
+          "tieCount": 23,
+          "tieRatePct": 23.71134021,
+          "lowerRank": 55.67010309,
+          "upperRank": 79.3814433,
+          "independentScore": -2,
+          "engineThreshold": 0.3,
+          "engineRank": 55.67010309,
+          "engineTieCount": 23,
+          "engineScore": -2
+        }
+      },
+      "walkForward": {
+        "referenceCutoff": "timestamp < 1744299000",
+        "surprise": {
+          "n": 86,
+          "p75Type7": 0.3,
+          "strictLowerCount": 74,
+          "strictLowerRank": 86.04651163,
+          "tieCount": 5,
+          "tieRatePct": 5.81395349,
+          "lowerRank": 86.04651163,
+          "upperRank": 91.86046512,
+          "independentScore": -3,
+          "engineThreshold": 0.3,
+          "engineRank": 86.04651163,
+          "engineTieCount": 5,
+          "engineScore": -3
+        },
+        "momentum": {
+          "n": 83,
+          "p75Type7": 0.3,
+          "strictLowerCount": 47,
+          "strictLowerRank": 56.62650602,
+          "tieCount": 19,
+          "tieRatePct": 22.89156627,
+          "lowerRank": 56.62650602,
+          "upperRank": 79.51807229,
+          "independentScore": -2,
+          "engineThreshold": 0.3,
+          "engineRank": 56.62650602,
+          "engineTieCount": 19,
+          "engineScore": -2
+        }
+      },
+      "independentPrices": {
+        "position": "quote",
+        "p0Index": 63912,
+        "p0Timestamp": 1744300800,
+        "p0": 1.10972,
+        "priorCandle": {
+          "timestamp": 1744297200,
+          "open": 1.10695,
+          "close": 1.10972
+        },
+        "horizons": [
+          {
+            "horizon": 1,
+            "closeTimestamp": 1744300800,
+            "close": 1.11268,
+            "rawPairSimpleReturn": 0.0026673395090652807,
+            "eventCurrencySimpleReturn": -0.002660243735844836,
+            "normalizedLogReturn": -0.002663788472182694
+          },
+          {
+            "horizon": 2,
+            "closeTimestamp": 1744304400,
+            "close": 1.11851,
+            "rawPairSimpleReturn": 0.00792091698806896,
+            "eventCurrencySimpleReturn": -0.007858669122314366,
+            "normalizedLogReturn": -0.007889711202414227
+          },
+          {
+            "horizon": 4,
+            "closeTimestamp": 1744311600,
+            "close": 1.11966,
+            "rawPairSimpleReturn": 0.00895721443246944,
+            "eventCurrencySimpleReturn": -0.00887769501455804,
+            "normalizedLogReturn": -0.00891733654025847
+          },
+          {
+            "horizon": 12,
+            "closeTimestamp": 1744340400,
+            "close": 1.13099,
+            "rawPairSimpleReturn": 0.019166997080344528,
+            "eventCurrencySimpleReturn": -0.01880653233008245,
+            "normalizedLogReturn": -0.018985624110875576
+          },
+          {
+            "horizon": 24,
+            "closeTimestamp": 1744383600,
+            "close": 1.13951,
+            "rawPairSimpleReturn": 0.02684460945103262,
+            "eventCurrencySimpleReturn": -0.026142815771691308,
+            "normalizedLogReturn": -0.026490614192905527
+          },
+          {
+            "horizon": 42,
+            "closeTimestamp": 1744621200,
+            "close": 1.14165,
+            "rawPairSimpleReturn": 0.028773023825829913,
+            "eventCurrencySimpleReturn": -0.027968291507905252,
+            "normalizedLogReturn": -0.028366853148333437
+          }
+        ]
+      },
+      "enginePriceCheck": {
+        "p0Timestamp": 1744300800,
+        "p0": 1.10972,
+        "horizons": [
+          {
+            "horizon": 1,
+            "rawPairSimpleReturn": 0.0026673395090652807,
+            "eventCurrencySimpleReturn": -0.002660243735844836,
+            "normalizedLogReturn": -0.002663788472182694
+          },
+          {
+            "horizon": 2,
+            "rawPairSimpleReturn": 0.00792091698806896,
+            "eventCurrencySimpleReturn": -0.007858669122314366,
+            "normalizedLogReturn": -0.007889711202414227
+          },
+          {
+            "horizon": 4,
+            "rawPairSimpleReturn": 0.00895721443246944,
+            "eventCurrencySimpleReturn": -0.00887769501455804,
+            "normalizedLogReturn": -0.00891733654025847
+          },
+          {
+            "horizon": 12,
+            "rawPairSimpleReturn": 0.019166997080344528,
+            "eventCurrencySimpleReturn": -0.01880653233008245,
+            "normalizedLogReturn": -0.018985624110875576
+          },
+          {
+            "horizon": 24,
+            "rawPairSimpleReturn": 0.02684460945103262,
+            "eventCurrencySimpleReturn": -0.026142815771691308,
+            "normalizedLogReturn": -0.026490614192905527
+          },
+          {
+            "horizon": 42,
+            "rawPairSimpleReturn": 0.028773023825829913,
+            "eventCurrencySimpleReturn": -0.027968291507905252,
+            "normalizedLogReturn": -0.028366853148333437
+          }
+        ],
+        "crossesWeekend": true,
+        "crossesNonWeekendGap": false
+      }
+    },
+    {
+      "identity": {
+        "eventSeriesKey": "USD:US:840030006:r0",
+        "eventId": "840030006",
+        "valueId": "229757",
+        "countryCode": "US",
+        "currency": "USD",
+        "eventName": "Core CPI m/m",
+        "periodTimestamp": 1751328000,
+        "revision": 0,
+        "sourceFile": "calendar_releases.csv"
+      },
+      "raw": {
+        "timestamp": 1755012600,
+        "brokerServerDateTime": "2025-08-12T15:30:00",
+        "actualRaw": "0.3",
+        "forecastRaw": "0.3",
+        "previousRaw": "0.2",
+        "revisedPreviousRaw": null
+      },
+      "parsed": {
+        "actual": 0.3,
+        "forecast": 0.3,
+        "previous": 0.2,
+        "revisedPrevious": null,
+        "surpriseDelta": 0,
+        "surpriseAbsDelta": 0,
+        "momentumDelta": 0.09999999999999998,
+        "momentumAbsDelta": 0.09999999999999998
+      },
+      "simultaneous": {
+        "count": 11,
+        "others": [
+          {
+            "eventId": "840030005",
+            "valueId": "229745",
+            "countryCode": "US",
+            "eventName": "CPI m/m"
+          },
+          {
+            "eventId": "840030007",
+            "valueId": "229769",
+            "countryCode": "US",
+            "eventName": "CPI y/y"
+          },
+          {
+            "eventId": "840030008",
+            "valueId": "229781",
+            "countryCode": "US",
+            "eventName": "Core CPI y/y"
+          },
+          {
+            "eventId": "840030009",
+            "valueId": "229793",
+            "countryCode": "US",
+            "eventName": "CPI n.s.a."
+          },
+          {
+            "eventId": "840030010",
+            "valueId": "229805",
+            "countryCode": "US",
+            "eventName": "Core CPI"
+          },
+          {
+            "eventId": "840030030",
+            "valueId": "230013",
+            "countryCode": "US",
+            "eventName": "Real Earnings m/m"
+          },
+          {
+            "eventId": "840030033",
+            "valueId": "230049",
+            "countryCode": "US",
+            "eventName": "CPI n.s.a. m/m"
+          },
+          {
+            "eventId": "840030034",
+            "valueId": "230061",
+            "countryCode": "US",
+            "eventName": "Core CPI n.s.a. m/m"
+          },
+          {
+            "eventId": "840030035",
+            "valueId": "230073",
+            "countryCode": "US",
+            "eventName": "CPI"
+          },
+          {
+            "eventId": "840030036",
+            "valueId": "230085",
+            "countryCode": "US",
+            "eventName": "Core CPI n.s.a."
+          }
+        ]
+      },
+      "retrospective": {
+        "referenceCutoff": "full source event_id + revision history",
+        "surprise": {
+          "n": 71,
+          "p75Type7": 0.2,
+          "strictLowerCount": null,
+          "strictLowerRank": null,
+          "tieCount": 0,
+          "tieRatePct": 0,
+          "lowerRank": null,
+          "upperRank": null,
+          "independentScore": 1,
+          "engineThreshold": 0.2,
+          "engineRank": null,
+          "engineTieCount": 0,
+          "engineScore": 1
+        },
+        "momentum": {
+          "n": 76,
+          "p75Type7": 0.2,
+          "strictLowerCount": 0,
+          "strictLowerRank": 0,
+          "tieCount": 44,
+          "tieRatePct": 57.89473684,
+          "lowerRank": 0,
+          "upperRank": 57.89473684,
+          "independentScore": 2,
+          "engineThreshold": 0.2,
+          "engineRank": 0,
+          "engineTieCount": 44,
+          "engineScore": 2
+        }
+      },
+      "walkForward": {
+        "referenceCutoff": "timestamp < 1755012600",
+        "surprise": {
+          "n": 67,
+          "p75Type7": 0.2,
+          "strictLowerCount": null,
+          "strictLowerRank": null,
+          "tieCount": 0,
+          "tieRatePct": 0,
+          "lowerRank": null,
+          "upperRank": null,
+          "independentScore": 1,
+          "engineThreshold": 0.2,
+          "engineRank": null,
+          "engineTieCount": 0,
+          "engineScore": 1
+        },
+        "momentum": {
+          "n": 68,
+          "p75Type7": 0.2,
+          "strictLowerCount": 0,
+          "strictLowerRank": 0,
+          "tieCount": 40,
+          "tieRatePct": 58.82352941,
+          "lowerRank": 0,
+          "upperRank": 58.82352941,
+          "independentScore": 2,
+          "engineThreshold": 0.2,
+          "engineRank": 0,
+          "engineTieCount": 40,
+          "engineScore": 2
+        }
+      },
+      "independentPrices": {
+        "position": "quote",
+        "p0Index": 66024,
+        "p0Timestamp": 1755014400,
+        "p0": 1.1642,
+        "priorCandle": {
+          "timestamp": 1755010800,
+          "open": 1.16048,
+          "close": 1.1642
+        },
+        "horizons": [
+          {
+            "horizon": 1,
+            "closeTimestamp": 1755014400,
+            "close": 1.1652,
+            "rawPairSimpleReturn": 0.0008589589417626886,
+            "eventCurrencySimpleReturn": -0.000858221764504008,
+            "normalizedLogReturn": -0.0008585902476445056
+          },
+          {
+            "horizon": 2,
+            "closeTimestamp": 1755018000,
+            "close": 1.16577,
+            "rawPairSimpleReturn": 0.0013485655385672146,
+            "eventCurrencySimpleReturn": -0.0013467493587929757,
+            "normalizedLogReturn": -0.001347657040748818
+          },
+          {
+            "horizon": 4,
+            "closeTimestamp": 1755025200,
+            "close": 1.16795,
+            "rawPairSimpleReturn": 0.0032210960316099158,
+            "eventCurrencySimpleReturn": -0.003210753885012352,
+            "normalizedLogReturn": -0.003215919415061409
+          },
+          {
+            "horizon": 12,
+            "closeTimestamp": 1755054000,
+            "close": 1.16796,
+            "rawPairSimpleReturn": 0.003229685621027434,
+            "eventCurrencySimpleReturn": -0.0032192883317924137,
+            "normalizedLogReturn": -0.003224481388767533
+          },
+          {
+            "horizon": 24,
+            "closeTimestamp": 1755097200,
+            "close": 1.16986,
+            "rawPairSimpleReturn": 0.004861707610376298,
+            "eventCurrencySimpleReturn": -0.0048381857658181815,
+            "normalizedLogReturn": -0.004849927674904678
+          },
+          {
+            "horizon": 42,
+            "closeTimestamp": 1755162000,
+            "close": 1.16848,
+            "rawPairSimpleReturn": 0.0036763442707439253,
+            "eventCurrencySimpleReturn": -0.003662878269204528,
+            "normalizedLogReturn": -0.0036696030341645597
+          }
+        ]
+      },
+      "enginePriceCheck": {
+        "p0Timestamp": 1755014400,
+        "p0": 1.1642,
+        "horizons": [
+          {
+            "horizon": 1,
+            "rawPairSimpleReturn": 0.0008589589417626886,
+            "eventCurrencySimpleReturn": -0.000858221764504008,
+            "normalizedLogReturn": -0.0008585902476445056
+          },
+          {
+            "horizon": 2,
+            "rawPairSimpleReturn": 0.0013485655385672146,
+            "eventCurrencySimpleReturn": -0.0013467493587929757,
+            "normalizedLogReturn": -0.001347657040748818
+          },
+          {
+            "horizon": 4,
+            "rawPairSimpleReturn": 0.0032210960316099158,
+            "eventCurrencySimpleReturn": -0.003210753885012352,
+            "normalizedLogReturn": -0.003215919415061409
+          },
+          {
+            "horizon": 12,
+            "rawPairSimpleReturn": 0.003229685621027434,
+            "eventCurrencySimpleReturn": -0.0032192883317924137,
+            "normalizedLogReturn": -0.003224481388767533
+          },
+          {
+            "horizon": 24,
+            "rawPairSimpleReturn": 0.004861707610376298,
+            "eventCurrencySimpleReturn": -0.0048381857658181815,
+            "normalizedLogReturn": -0.004849927674904678
+          },
+          {
+            "horizon": 42,
+            "rawPairSimpleReturn": 0.0036763442707439253,
+            "eventCurrencySimpleReturn": -0.003662878269204528,
+            "normalizedLogReturn": -0.0036696030341645597
+          }
+        ],
+        "crossesWeekend": false,
+        "crossesNonWeekendGap": false
+      }
+    },
+    {
+      "identity": {
+        "eventSeriesKey": "USD:US:840010001:r0",
+        "eventId": "840010001",
+        "valueId": "115719",
+        "countryCode": "US",
+        "currency": "USD",
+        "eventName": "Core PCE Price Index m/m",
+        "periodTimestamp": 1596240000,
+        "revision": 0,
+        "sourceFile": "calendar_releases.csv"
+      },
+      "raw": {
+        "timestamp": 1601566200,
+        "brokerServerDateTime": "2020-10-01T15:30:00",
+        "actualRaw": "0.3",
+        "forecastRaw": "0.1",
+        "previousRaw": "0.3",
+        "revisedPreviousRaw": "0.4"
+      },
+      "parsed": {
+        "actual": 0.3,
+        "forecast": 0.1,
+        "previous": 0.3,
+        "revisedPrevious": 0.4,
+        "surpriseDelta": 0.19999999999999998,
+        "surpriseAbsDelta": 0.19999999999999998,
+        "momentumDelta": 0,
+        "momentumAbsDelta": 0
+      },
+      "simultaneous": {
+        "count": 10,
+        "others": [
+          {
+            "eventId": "840010002",
+            "valueId": "115704",
+            "countryCode": "US",
+            "eventName": "Core PCE Price Index y/y"
+          },
+          {
+            "eventId": "840010003",
+            "valueId": "115702",
+            "countryCode": "US",
+            "eventName": "PCE Price Index m/m"
+          },
+          {
+            "eventId": "840010004",
+            "valueId": "115703",
+            "countryCode": "US",
+            "eventName": "PCE Price Index y/y"
+          },
+          {
+            "eventId": "840010005",
+            "valueId": "115716",
+            "countryCode": "US",
+            "eventName": "Personal Spending m/m"
+          },
+          {
+            "eventId": "840010006",
+            "valueId": "115718",
+            "countryCode": "US",
+            "eventName": "Personal Income m/m"
+          },
+          {
+            "eventId": "840010014",
+            "valueId": "115717",
+            "countryCode": "US",
+            "eventName": "Real PCE m/m"
+          },
+          {
+            "eventId": "840140001",
+            "valueId": "137153",
+            "countryCode": "US",
+            "eventName": "Initial Jobless Claims"
+          },
+          {
+            "eventId": "840140002",
+            "valueId": "137170",
+            "countryCode": "US",
+            "eventName": "Continuing Jobless Claims"
+          },
+          {
+            "eventId": "840140003",
+            "valueId": "137175",
+            "countryCode": "US",
+            "eventName": "Initial Jobless Claims 4-Week Average"
+          }
+        ]
+      },
+      "retrospective": {
+        "referenceCutoff": "full source event_id + revision history",
+        "surprise": {
+          "n": 76,
+          "p75Type7": 0.2,
+          "strictLowerCount": 46,
+          "strictLowerRank": 60.52631579,
+          "tieCount": 20,
+          "tieRatePct": 26.31578947,
+          "lowerRank": 60.52631579,
+          "upperRank": 86.84210526,
+          "independentScore": 2,
+          "engineThreshold": 0.2,
+          "engineRank": 60.52631579,
+          "engineTieCount": 20,
+          "engineScore": 2
+        },
+        "momentum": {
+          "n": 77,
+          "p75Type7": 0.2,
+          "strictLowerCount": null,
+          "strictLowerRank": null,
+          "tieCount": 0,
+          "tieRatePct": 0,
+          "lowerRank": null,
+          "upperRank": null,
+          "independentScore": 1,
+          "engineThreshold": 0.2,
+          "engineRank": null,
+          "engineTieCount": 0,
+          "engineScore": 1
+        }
+      },
+      "walkForward": {
+        "referenceCutoff": "timestamp < 1601566200",
+        "surprise": {
+          "n": 24,
+          "p75Type7": 0.125,
+          "strictLowerCount": 18,
+          "strictLowerRank": 75,
+          "tieCount": 3,
+          "tieRatePct": 12.5,
+          "lowerRank": 75,
+          "upperRank": 87.5,
+          "independentScore": 3,
+          "engineThreshold": 0.125,
+          "engineRank": 75,
+          "engineTieCount": 3,
+          "engineScore": 3
+        },
+        "momentum": {
+          "n": 27,
+          "p75Type7": 0.15,
+          "strictLowerCount": null,
+          "strictLowerRank": null,
+          "tieCount": 0,
+          "tieRatePct": 0,
+          "lowerRank": null,
+          "upperRank": null,
+          "independentScore": 1,
+          "engineThreshold": 0.15,
+          "engineRank": null,
+          "engineTieCount": 0,
+          "engineScore": 1
+        }
+      },
+      "independentPrices": {
+        "position": "quote",
+        "p0Index": 35727,
+        "p0Timestamp": 1601568000,
+        "p0": 1.17546,
+        "priorCandle": {
+          "timestamp": 1601564400,
+          "open": 1.17626,
+          "close": 1.17546
+        },
+        "horizons": [
+          {
+            "horizon": 1,
+            "closeTimestamp": 1601568000,
+            "close": 1.17379,
+            "rawPairSimpleReturn": -0.0014207203988226835,
+            "eventCurrencySimpleReturn": 0.001422741717002296,
+            "normalizedLogReturn": 0.001421730578950872
+          },
+          {
+            "horizon": 2,
+            "closeTimestamp": 1601571600,
+            "close": 1.17361,
+            "rawPairSimpleReturn": -0.0015738519388153183,
+            "eventCurrencySimpleReturn": 0.001576332853332696,
+            "normalizedLogReturn": 0.0015750917447960942
+          },
+          {
+            "horizon": 4,
+            "closeTimestamp": 1601578800,
+            "close": 1.17444,
+            "rawPairSimpleReturn": -0.0008677453932928181,
+            "eventCurrencySimpleReturn": 0.0008684990293246209,
+            "normalizedLogReturn": 0.0008681221022673593
+          },
+          {
+            "horizon": 12,
+            "closeTimestamp": 1601607600,
+            "close": 1.17346,
+            "rawPairSimpleReturn": -0.0017014615554761248,
+            "eventCurrencySimpleReturn": 0.0017043614609786317,
+            "normalizedLogReturn": 0.0017029106851807717
+          },
+          {
+            "horizon": 24,
+            "closeTimestamp": 1601650800,
+            "close": 1.17082,
+            "rawPairSimpleReturn": -0.003947390808704654,
+            "eventCurrencySimpleReturn": 0.003963034454484982,
+            "normalizedLogReturn": 0.003955202319302792
+          },
+          {
+            "horizon": 42,
+            "closeTimestamp": 1601888400,
+            "close": 1.17243,
+            "rawPairSimpleReturn": -0.002577714256546293,
+            "eventCurrencySimpleReturn": 0.0025843760395076742,
+            "normalizedLogReturn": 0.0025810422823036704
+          }
+        ]
+      },
+      "enginePriceCheck": {
+        "p0Timestamp": 1601568000,
+        "p0": 1.17546,
+        "horizons": [
+          {
+            "horizon": 1,
+            "rawPairSimpleReturn": -0.0014207203988226835,
+            "eventCurrencySimpleReturn": 0.001422741717002296,
+            "normalizedLogReturn": 0.001421730578950872
+          },
+          {
+            "horizon": 2,
+            "rawPairSimpleReturn": -0.0015738519388153183,
+            "eventCurrencySimpleReturn": 0.001576332853332696,
+            "normalizedLogReturn": 0.0015750917447960942
+          },
+          {
+            "horizon": 4,
+            "rawPairSimpleReturn": -0.0008677453932928181,
+            "eventCurrencySimpleReturn": 0.0008684990293246209,
+            "normalizedLogReturn": 0.0008681221022673593
+          },
+          {
+            "horizon": 12,
+            "rawPairSimpleReturn": -0.0017014615554761248,
+            "eventCurrencySimpleReturn": 0.0017043614609786317,
+            "normalizedLogReturn": 0.0017029106851807717
+          },
+          {
+            "horizon": 24,
+            "rawPairSimpleReturn": -0.003947390808704654,
+            "eventCurrencySimpleReturn": 0.003963034454484982,
+            "normalizedLogReturn": 0.003955202319302792
+          },
+          {
+            "horizon": 42,
+            "rawPairSimpleReturn": -0.002577714256546293,
+            "eventCurrencySimpleReturn": 0.0025843760395076742,
+            "normalizedLogReturn": 0.0025810422823036704
+          }
+        ],
+        "crossesWeekend": true,
+        "crossesNonWeekendGap": false
+      }
+    },
+    {
+      "identity": {
+        "eventSeriesKey": "EUR:EU:999500001:r1",
+        "eventId": "999500001",
+        "valueId": "118422",
+        "countryCode": "EU",
+        "currency": "EUR",
+        "eventName": "S&P Global Manufacturing PMI",
+        "periodTimestamp": 1577836800,
+        "revision": 1,
+        "sourceFile": "calendar_releases.csv"
+      },
+      "raw": {
+        "timestamp": 1579867200,
+        "brokerServerDateTime": "2020-01-24T12:00:00",
+        "actualRaw": "47.8",
+        "forecastRaw": "45.1",
+        "previousRaw": "46.3",
+        "revisedPreviousRaw": null
+      },
+      "parsed": {
+        "actual": 47.8,
+        "forecast": 45.1,
+        "previous": 46.3,
+        "revisedPrevious": null,
+        "surpriseDelta": 2.6999999999999957,
+        "surpriseAbsDelta": 2.6999999999999957,
+        "momentumDelta": 1.5,
+        "momentumAbsDelta": 1.5
+      },
+      "simultaneous": {
+        "count": 4,
+        "others": [
+          {
+            "eventId": "999500002",
+            "valueId": "118424",
+            "countryCode": "EU",
+            "eventName": "S&P Global Services PMI"
+          },
+          {
+            "eventId": "999500003",
+            "valueId": "118423",
+            "countryCode": "EU",
+            "eventName": "S&P Global Composite PMI"
+          },
+          {
+            "eventId": "380010009",
+            "valueId": "119895",
+            "countryCode": "IT",
+            "eventName": "Trade Balance Non-EU"
+          }
+        ]
+      },
+      "retrospective": {
+        "referenceCutoff": "full source event_id + revision history",
+        "surprise": {
+          "n": 104,
+          "p75Type7": 1.4,
+          "strictLowerCount": 94,
+          "strictLowerRank": 90.38461538,
+          "tieCount": 1,
+          "tieRatePct": 0.96153846,
+          "lowerRank": 90.38461538,
+          "upperRank": 91.34615385,
+          "independentScore": 3,
+          "engineThreshold": 1.4,
+          "engineRank": 90.38461538,
+          "engineTieCount": 1,
+          "engineScore": 3
+        },
+        "momentum": {
+          "n": 104,
+          "p75Type7": 1.225,
+          "strictLowerCount": 83,
+          "strictLowerRank": 79.80769231,
+          "tieCount": 2,
+          "tieRatePct": 1.92307692,
+          "lowerRank": 79.80769231,
+          "upperRank": 81.73076923,
+          "independentScore": 3,
+          "engineThreshold": 1.225,
+          "engineRank": 79.80769231,
+          "engineTieCount": 2,
+          "engineScore": 3
+        }
+      },
+      "walkForward": {
+        "referenceCutoff": "timestamp < 1579867200",
+        "surprise": {
+          "n": 32,
+          "p75Type7": 1.2,
+          "strictLowerCount": 32,
+          "strictLowerRank": 100,
+          "tieCount": 0,
+          "tieRatePct": 0,
+          "lowerRank": 100,
+          "upperRank": 100,
+          "independentScore": 3,
+          "engineThreshold": 1.2,
+          "engineRank": 100,
+          "engineTieCount": 0,
+          "engineScore": 3
+        },
+        "momentum": {
+          "n": 31,
+          "p75Type7": 1.1,
+          "strictLowerCount": 28,
+          "strictLowerRank": 90.32258065,
+          "tieCount": 1,
+          "tieRatePct": 3.22580645,
+          "lowerRank": 90.32258065,
+          "upperRank": 93.5483871,
+          "independentScore": 3,
+          "engineThreshold": 1.1,
+          "engineRank": 90.32258065,
+          "engineTieCount": 1,
+          "engineScore": 3
+        }
+      },
+      "independentPrices": {
+        "position": "base",
+        "p0Index": 31430,
+        "p0Timestamp": 1579867200,
+        "p0": 1.10354,
+        "priorCandle": {
+          "timestamp": 1579863600,
+          "open": 1.10466,
+          "close": 1.10355
+        },
+        "horizons": [
+          {
+            "horizon": 1,
+            "closeTimestamp": 1579867200,
+            "close": 1.10371,
+            "rawPairSimpleReturn": 0.00015404969461907392,
+            "eventCurrencySimpleReturn": 0.00015404969461907392,
+            "normalizedLogReturn": 0.0001540378301833273
+          },
+          {
+            "horizon": 2,
+            "closeTimestamp": 1579870800,
+            "close": 1.10352,
+            "rawPairSimpleReturn": -0.000018123493484512032,
+            "eventCurrencySimpleReturn": -0.000018123493484512032,
+            "normalizedLogReturn": -0.000018123657717004387
+          },
+          {
+            "horizon": 4,
+            "closeTimestamp": 1579878000,
+            "close": 1.10383,
+            "rawPairSimpleReturn": 0.00026279065552681224,
+            "eventCurrencySimpleReturn": 0.00026279065552681224,
+            "normalizedLogReturn": 0.00026275613211065114
+          },
+          {
+            "horizon": 12,
+            "closeTimestamp": 1579906800,
+            "close": 1.10266,
+            "rawPairSimpleReturn": -0.0007974337133225262,
+            "eventCurrencySimpleReturn": -0.0007974337133225262,
+            "normalizedLogReturn": -0.000797751832716761
+          },
+          {
+            "horizon": 24,
+            "closeTimestamp": 1580122800,
+            "close": 1.10206,
+            "rawPairSimpleReturn": -0.0013411385178606627,
+            "eventCurrencySimpleReturn": -0.0013411385178606627,
+            "normalizedLogReturn": -0.0013420386490130907
+          },
+          {
+            "horizon": 42,
+            "closeTimestamp": 1580187600,
+            "close": 1.10209,
+            "rawPairSimpleReturn": -0.0013139532776337282,
+            "eventCurrencySimpleReturn": -0.0013139532776337282,
+            "normalizedLogReturn": -0.0013148172711559723
+          }
+        ]
+      },
+      "enginePriceCheck": {
+        "p0Timestamp": 1579867200,
+        "p0": 1.10354,
+        "horizons": [
+          {
+            "horizon": 1,
+            "rawPairSimpleReturn": 0.00015404969461907392,
+            "eventCurrencySimpleReturn": 0.00015404969461907392,
+            "normalizedLogReturn": 0.0001540378301833273
+          },
+          {
+            "horizon": 2,
+            "rawPairSimpleReturn": -0.000018123493484512032,
+            "eventCurrencySimpleReturn": -0.000018123493484512032,
+            "normalizedLogReturn": -0.000018123657717004387
+          },
+          {
+            "horizon": 4,
+            "rawPairSimpleReturn": 0.00026279065552681224,
+            "eventCurrencySimpleReturn": 0.00026279065552681224,
+            "normalizedLogReturn": 0.00026275613211065114
+          },
+          {
+            "horizon": 12,
+            "rawPairSimpleReturn": -0.0007974337133225262,
+            "eventCurrencySimpleReturn": -0.0007974337133225262,
+            "normalizedLogReturn": -0.000797751832716761
+          },
+          {
+            "horizon": 24,
+            "rawPairSimpleReturn": -0.0013411385178606627,
+            "eventCurrencySimpleReturn": -0.0013411385178606627,
+            "normalizedLogReturn": -0.0013420386490130907
+          },
+          {
+            "horizon": 42,
+            "rawPairSimpleReturn": -0.0013139532776337282,
+            "eventCurrencySimpleReturn": -0.0013139532776337282,
+            "normalizedLogReturn": -0.0013148172711559723
+          }
+        ],
+        "crossesWeekend": true,
+        "crossesNonWeekendGap": false
+      }
+    },
+    {
+      "identity": {
+        "eventSeriesKey": "USD:US:840030016:r0",
+        "eventId": "840030016",
+        "valueId": "277623",
+        "countryCode": "US",
+        "currency": "USD",
+        "eventName": "Nonfarm Payrolls",
+        "periodTimestamp": 1785542400,
+        "revision": 0,
+        "sourceFile": "calendar_releases.csv"
+      },
+      "raw": {
+        "timestamp": 1788535800,
+        "brokerServerDateTime": "2026-09-04T15:30:00",
+        "actualRaw": "162",
+        "forecastRaw": "41",
+        "previousRaw": "-23",
+        "revisedPreviousRaw": "21"
+      },
+      "parsed": {
+        "actual": 162,
+        "forecast": 41,
+        "previous": -23,
+        "revisedPrevious": 21,
+        "surpriseDelta": 121,
+        "surpriseAbsDelta": 121,
+        "momentumDelta": 185,
+        "momentumAbsDelta": 185
+      },
+      "simultaneous": {
+        "count": 10,
+        "others": [
+          {
+            "eventId": "840030015",
+            "valueId": "277611",
+            "countryCode": "US",
+            "eventName": "Unemployment Rate"
+          },
+          {
+            "eventId": "840030017",
+            "valueId": "277635",
+            "countryCode": "US",
+            "eventName": "Participation Rate"
+          },
+          {
+            "eventId": "840030018",
+            "valueId": "277647",
+            "countryCode": "US",
+            "eventName": "Average Hourly Earnings m/m"
+          },
+          {
+            "eventId": "840030019",
+            "valueId": "277659",
+            "countryCode": "US",
+            "eventName": "Average Hourly Earnings y/y"
+          },
+          {
+            "eventId": "840030020",
+            "valueId": "277671",
+            "countryCode": "US",
+            "eventName": "Average Weekly Hours"
+          },
+          {
+            "eventId": "840030022",
+            "valueId": "277683",
+            "countryCode": "US",
+            "eventName": "Government Payrolls"
+          },
+          {
+            "eventId": "840030023",
+            "valueId": "277695",
+            "countryCode": "US",
+            "eventName": "Private Nonfarm Payrolls"
+          },
+          {
+            "eventId": "840030024",
+            "valueId": "277707",
+            "countryCode": "US",
+            "eventName": "U6 Unemployment Rate"
+          },
+          {
+            "eventId": "840030032",
+            "valueId": "277771",
+            "countryCode": "US",
+            "eventName": "Manufacturing Payrolls"
+          }
+        ]
+      },
+      "retrospective": {
+        "referenceCutoff": "full source event_id + revision history",
+        "surprise": {
+          "n": 112,
+          "p75Type7": 303.5,
+          "strictLowerCount": 56,
+          "strictLowerRank": 50,
+          "tieCount": 1,
+          "tieRatePct": 0.89285714,
+          "lowerRank": 50,
+          "upperRank": 50.89285714,
+          "independentScore": 2,
+          "engineThreshold": 303.5,
+          "engineRank": 50,
+          "engineTieCount": 1,
+          "engineScore": 2
+        },
+        "momentum": {
+          "n": 111,
+          "p75Type7": 210.5,
+          "strictLowerCount": 76,
+          "strictLowerRank": 68.46846847,
+          "tieCount": 1,
+          "tieRatePct": 0.9009009,
+          "lowerRank": 68.46846847,
+          "upperRank": 69.36936937,
+          "independentScore": 2,
+          "engineThreshold": 210.5,
+          "engineRank": 68.46846847,
+          "engineTieCount": 1,
+          "engineScore": 2
+        }
+      },
+      "walkForward": {
+        "referenceCutoff": "timestamp < 1788535800",
+        "surprise": {
+          "n": 111,
+          "p75Type7": 314,
+          "strictLowerCount": 56,
+          "strictLowerRank": 50.45045045,
+          "tieCount": 0,
+          "tieRatePct": 0,
+          "lowerRank": 50.45045045,
+          "upperRank": 50.45045045,
+          "independentScore": 2,
+          "engineThreshold": 314,
+          "engineRank": 50.45045045,
+          "engineTieCount": 0,
+          "engineScore": 2
+        },
+        "momentum": {
+          "n": 110,
+          "p75Type7": 210.75,
+          "strictLowerCount": 76,
+          "strictLowerRank": 69.09090909,
+          "tieCount": 0,
+          "tieRatePct": 0,
+          "lowerRank": 69.09090909,
+          "upperRank": 69.09090909,
+          "independentScore": 2,
+          "engineThreshold": 210.75,
+          "engineRank": 69.09090909,
+          "engineTieCount": 0,
+          "engineScore": 2
+        }
+      },
+      "independentPrices": {
+        "position": "quote",
+        "p0Index": 72648,
+        "p0Timestamp": 1788537600,
+        "p0": 1.16012,
+        "priorCandle": {
+          "timestamp": 1788534000,
+          "open": 1.16201,
+          "close": 1.16011
+        },
+        "horizons": [
+          {
+            "horizon": 1,
+            "closeTimestamp": 1788537600,
+            "close": 1.16097,
+            "rawPairSimpleReturn": 0.0007326828259146545,
+            "eventCurrencySimpleReturn": -0.0007321463948249951,
+            "normalizedLogReturn": -0.0007324145448882284
+          },
+          {
+            "horizon": 2,
+            "closeTimestamp": 1788541200,
+            "close": 1.16148,
+            "rawPairSimpleReturn": 0.0011722925214632252,
+            "eventCurrencySimpleReturn": -0.0011709198608671478,
+            "normalizedLogReturn": -0.0011716059231289596
+          },
+          {
+            "horizon": 4,
+            "closeTimestamp": 1788548400,
+            "close": 1.16199,
+            "rawPairSimpleReturn": 0.0016119022170120179,
+            "eventCurrencySimpleReturn": -0.0016093081696055833,
+            "normalizedLogReturn": -0.0016106044969781204
+          },
+          {
+            "horizon": 12,
+            "closeTimestamp": 1788750000,
+            "close": 1.16177,
+            "rawPairSimpleReturn": 0.0014222666620693492,
+            "eventCurrencySimpleReturn": -0.0014202466925467006,
+            "normalizedLogReturn": -0.0014212561988256522
+          },
+          {
+            "horizon": 24,
+            "closeTimestamp": 1788793200,
+            "close": 1.16244,
+            "rawPairSimpleReturn": 0.001999793124848992,
+            "eventCurrencySimpleReturn": -0.0019958019338631727,
+            "normalizedLogReturn": -0.0019977962004251878
+          },
+          {
+            "horizon": 42,
+            "closeTimestamp": 1788858000,
+            "close": 1.16203,
+            "rawPairSimpleReturn": 0.0016463814088196749,
+            "eventCurrencySimpleReturn": -0.00164367529237619,
+            "normalizedLogReturn": -0.0016450276086586127
+          }
+        ]
+      },
+      "enginePriceCheck": {
+        "p0Timestamp": 1788537600,
+        "p0": 1.16012,
+        "horizons": [
+          {
+            "horizon": 1,
+            "rawPairSimpleReturn": 0.0007326828259146545,
+            "eventCurrencySimpleReturn": -0.0007321463948249951,
+            "normalizedLogReturn": -0.0007324145448882284
+          },
+          {
+            "horizon": 2,
+            "rawPairSimpleReturn": 0.0011722925214632252,
+            "eventCurrencySimpleReturn": -0.0011709198608671478,
+            "normalizedLogReturn": -0.0011716059231289596
+          },
+          {
+            "horizon": 4,
+            "rawPairSimpleReturn": 0.0016119022170120179,
+            "eventCurrencySimpleReturn": -0.0016093081696055833,
+            "normalizedLogReturn": -0.0016106044969781204
+          },
+          {
+            "horizon": 12,
+            "rawPairSimpleReturn": 0.0014222666620693492,
+            "eventCurrencySimpleReturn": -0.0014202466925467006,
+            "normalizedLogReturn": -0.0014212561988256522
+          },
+          {
+            "horizon": 24,
+            "rawPairSimpleReturn": 0.001999793124848992,
+            "eventCurrencySimpleReturn": -0.0019958019338631727,
+            "normalizedLogReturn": -0.0019977962004251878
+          },
+          {
+            "horizon": 42,
+            "rawPairSimpleReturn": 0.0016463814088196749,
+            "eventCurrencySimpleReturn": -0.00164367529237619,
+            "normalizedLogReturn": -0.0016450276086586127
+          }
+        ],
+        "crossesWeekend": true,
+        "crossesNonWeekendGap": false
+      }
+    }
+  ]
+}

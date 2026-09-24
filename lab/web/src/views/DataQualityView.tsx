@@ -29,7 +29,7 @@ export const DataQualityView: React.FC = () => {
     );
   }
 
-  const { overview, pairsAudit, duplicateResolution } = qualityData;
+  const { overview, pairsAudit, duplicateResolution, calendarProvenance } = qualityData;
 
   const rejectedRows = overview.rejectedRowCount ?? 0;
   const malformedTs = overview.malformedTimestampCount ?? 0;
@@ -52,7 +52,7 @@ export const DataQualityView: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-mono text-xs">
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3.5 space-y-1 shadow-sm">
           <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-semibold">Calendar File</span>
-          <div className="text-slate-900 dark:text-slate-100 font-bold truncate">fyodor_calendar_master_history_repaired.csv</div>
+          <div className="text-slate-900 dark:text-slate-100 font-bold truncate">{calendarProvenance?.sourceFilename || 'calendar source'}</div>
           <div className="text-sky-600 dark:text-sky-400 font-semibold">{overview.calendarRecordCount.toLocaleString()} rows ingested</div>
         </div>
 
@@ -78,6 +78,21 @@ export const DataQualityView: React.FC = () => {
           <div className="text-slate-500 dark:text-slate-400 text-[10px]">{duplicateResolution}</div>
         </div>
       </div>
+
+      {calendarProvenance && (
+        <div className={`rounded-lg p-4 font-mono text-xs space-y-2 border ${calendarProvenance.schemaVersion === 'fyodor-mt5-research-export/3.1.0' ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-900/60' : 'bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-900/60'}`}>
+          <div className="font-bold text-slate-900 dark:text-slate-200">
+            {calendarProvenance.schemaVersion === 'fyodor-mt5-research-export/3.1.0' ? 'Calendar provenance manifested' : 'Calendar provenance is incomplete'}
+          </div>
+          <div><span className="font-semibold">Provider:</span> {calendarProvenance.provider}</div>
+          <div><span className="font-semibold">Schema / exporter:</span> {calendarProvenance.schemaVersion} / {calendarProvenance.exporterVersion || 'unknown'}</div>
+          {calendarProvenance.accountCompany && <div><span className="font-semibold">Broker source:</span> {calendarProvenance.accountCompany} / {calendarProvenance.accountServer}</div>}
+          <div><span className="font-semibold">Timestamp convention:</span> {calendarProvenance.timestampConvention}</div>
+          {calendarProvenance.snapshotServerUtcOffsetSeconds && <div><span className="font-semibold">Snapshot server-minus-GMT:</span> {Number(calendarProvenance.snapshotServerUtcOffsetSeconds) / 3600} hours (historical offsets not reconstructed)</div>}
+          <div><span className="font-semibold">Status:</span> {calendarProvenance.provenanceStatus}</div>
+          <div><span className="font-semibold">Missing source metadata:</span> {calendarProvenance.missingMetaQuotesFields.length > 0 ? calendarProvenance.missingMetaQuotesFields.join(', ') : 'None of the audited MetaQuotes identity/scaling fields'}</div>
+        </div>
+      )}
 
       {/* Timestamp & Classification Hygiene */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 font-mono text-xs space-y-3 shadow-sm">
@@ -178,7 +193,7 @@ export const DataQualityView: React.FC = () => {
           <h3 className="font-bold text-slate-900 dark:text-slate-200">
             Physical FX Candle File Discovery & Coverage ({pairsAudit.length} Instruments)
           </h3>
-          <span className="text-slate-500 dark:text-slate-400 text-xs font-normal">Location: raw_data/fyodor_candles/</span>
+          <span className="text-slate-500 dark:text-slate-400 text-xs font-normal">Selected source: manifested export or legacy fallback</span>
         </div>
 
         <div className="overflow-x-auto max-h-96">

@@ -14,6 +14,8 @@ export const DeltaDistributionView: React.FC = () => {
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [eventsList, setEventsList] = useState<EventListItem[]>([]);
   const [selectedEvent, setSelectedEvent] = useState('');
+  const [selectedEventId, setSelectedEventId] = useState('');
+  const [selectedEventSeriesKey, setSelectedEventSeriesKey] = useState('');
   const [selectedFamily, setSelectedFamily] = useState('all');
   const [thresholdPercentile, setThresholdPercentile] = useState(75);
 
@@ -38,18 +40,20 @@ export const DeltaDistributionView: React.FC = () => {
       if (events.length > 0) {
         const def = events.find((e) => e.eventName.includes('CPI')) || events[0];
         setSelectedEvent(def.eventName);
+        setSelectedEventId(def.eventId);
+        setSelectedEventSeriesKey(def.eventSeriesKey);
       }
     });
   }, [selectedCurrency, selectedFamily]);
 
   useEffect(() => {
-    if (!selectedCurrency || !selectedEvent) return;
+    if (!selectedCurrency || !selectedEvent || !selectedEventId || !selectedEventSeriesKey) return;
     setLoading(true);
-    fetchDistribution(selectedCurrency, selectedEvent, thresholdPercentile)
+    fetchDistribution(selectedCurrency, selectedEvent, thresholdPercentile, selectedEventId, selectedEventSeriesKey)
       .then(setDistData)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [selectedCurrency, selectedEvent, thresholdPercentile]);
+  }, [selectedCurrency, selectedEvent, selectedEventId, selectedEventSeriesKey, thresholdPercentile]);
 
   return (
     <div className="space-y-6">
@@ -103,15 +107,22 @@ export const DeltaDistributionView: React.FC = () => {
           </div>
 
           <div className="md:col-span-2">
-            <label className="text-slate-500 block mb-1 font-semibold">Exact Event Name:</label>
+            <label className="text-slate-500 block mb-1 font-semibold">Source Event Series:</label>
             <select
-              value={selectedEvent}
-              onChange={(e) => setSelectedEvent(e.target.value)}
+              value={selectedEventSeriesKey}
+              onChange={(e) => {
+                const selected = eventsList.find((event) => event.eventSeriesKey === e.target.value);
+                if (selected) {
+                  setSelectedEventId(selected.eventId);
+                  setSelectedEventSeriesKey(selected.eventSeriesKey);
+                  setSelectedEvent(selected.eventName);
+                }
+              }}
               className="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-slate-800 truncate font-medium"
             >
               {eventsList.map((ev) => (
-                <option key={ev.eventName} value={ev.eventName}>
-                  [{ev.count}] {ev.eventName} ({ev.family})
+                <option key={ev.eventSeriesKey} value={ev.eventSeriesKey}>
+                  [{ev.count}] {ev.countryCode} · {ev.eventName} · ID {ev.eventId}{ev.revision !== null ? ` · rev ${ev.revision}` : ''} ({ev.family})
                 </option>
               ))}
             </select>

@@ -17,6 +17,10 @@ interface EventExplorerViewProps {
   onCurrencyChange?: (c: string) => void;
   selectedEvent?: string;
   onEventChange?: (e: string) => void;
+  selectedEventId?: string;
+  onEventIdChange?: (eventId: string) => void;
+  selectedEventSeriesKey?: string;
+  onEventSeriesKeyChange?: (eventSeriesKey: string) => void;
   selectedPair?: string;
   onPairChange?: (p: string) => void;
   selectedFamily?: string;
@@ -29,6 +33,10 @@ export const EventExplorerView: React.FC<EventExplorerViewProps> = ({
   onCurrencyChange,
   selectedEvent: externalEvent,
   onEventChange,
+  selectedEventId: externalEventId,
+  onEventIdChange,
+  selectedEventSeriesKey: externalEventSeriesKey,
+  onEventSeriesKeyChange,
   selectedPair: externalPair,
   onPairChange,
   selectedFamily: externalFamily,
@@ -42,6 +50,10 @@ export const EventExplorerView: React.FC<EventExplorerViewProps> = ({
   const [eventsList, setEventsList] = useState<EventListItem[]>([]);
   const [internalEvent, setInternalEvent] = useState('');
   const selectedEvent = externalEvent !== undefined ? externalEvent : internalEvent;
+  const [internalEventId, setInternalEventId] = useState('');
+  const selectedEventId = externalEventId !== undefined ? externalEventId : internalEventId;
+  const [internalEventSeriesKey, setInternalEventSeriesKey] = useState('');
+  const selectedEventSeriesKey = externalEventSeriesKey !== undefined ? externalEventSeriesKey : internalEventSeriesKey;
 
   const [internalFamily, setInternalFamily] = useState('all');
   const selectedFamily = externalFamily !== undefined ? externalFamily : internalFamily;
@@ -95,9 +107,15 @@ export const EventExplorerView: React.FC<EventExplorerViewProps> = ({
     else setInternalCurrency(c);
   };
 
-  const handleEventChange = (e: string) => {
-    if (onEventChange) onEventChange(e);
-    else setInternalEvent(e);
+  const handleEventChange = (eventSeriesKey: string) => {
+    const selected = eventsList.find((event) => event.eventSeriesKey === eventSeriesKey);
+    if (!selected) return;
+    if (onEventIdChange) onEventIdChange(selected.eventId);
+    else setInternalEventId(selected.eventId);
+    if (onEventSeriesKeyChange) onEventSeriesKeyChange(selected.eventSeriesKey);
+    else setInternalEventSeriesKey(selected.eventSeriesKey);
+    if (onEventChange) onEventChange(selected.eventName);
+    else setInternalEvent(selected.eventName);
   };
 
   const handlePairChange = (p: string) => {
@@ -116,9 +134,14 @@ export const EventExplorerView: React.FC<EventExplorerViewProps> = ({
     fetchEvents(selectedCurrency, selectedFamily).then((events) => {
       setEventsList(events);
       if (events.length > 0) {
-        if (!selectedEvent || !events.some((e) => e.eventName === selectedEvent)) {
+        if (!selectedEventSeriesKey || !events.some((e) => e.eventSeriesKey === selectedEventSeriesKey)) {
           const defaultEv = events.find((e) => e.eventName.includes('CPI')) || events[0];
-          handleEventChange(defaultEv.eventName);
+          if (onEventIdChange) onEventIdChange(defaultEv.eventId);
+          else setInternalEventId(defaultEv.eventId);
+          if (onEventSeriesKeyChange) onEventSeriesKeyChange(defaultEv.eventSeriesKey);
+          else setInternalEventSeriesKey(defaultEv.eventSeriesKey);
+          if (onEventChange) onEventChange(defaultEv.eventName);
+          else setInternalEvent(defaultEv.eventName);
         }
       }
     });
@@ -135,11 +158,13 @@ export const EventExplorerView: React.FC<EventExplorerViewProps> = ({
 
   // Load observations when query/page/sort changes
   useEffect(() => {
-    if (!selectedCurrency || !selectedEvent) return;
+    if (!selectedCurrency || !selectedEvent || !selectedEventId || !selectedEventSeriesKey) return;
     setLoading(true);
     const query: any = {
       currency: selectedCurrency,
       eventName: selectedEvent,
+      eventId: selectedEventId,
+      eventSeriesKey: selectedEventSeriesKey,
       pair: selectedPair,
       surpriseScore: selectedSurpriseScore,
       momentumScore: selectedMomentumScore,
@@ -164,6 +189,8 @@ export const EventExplorerView: React.FC<EventExplorerViewProps> = ({
   }, [
     selectedCurrency,
     selectedEvent,
+    selectedEventId,
+    selectedEventSeriesKey,
     selectedPair,
     selectedSurpriseScore,
     selectedMomentumScore,
@@ -251,15 +278,15 @@ export const EventExplorerView: React.FC<EventExplorerViewProps> = ({
 
           {/* Exact Event */}
           <div className="lg:col-span-2">
-            <label className="text-slate-600 dark:text-slate-400 block mb-1 text-[11px] font-semibold">Exact Event Name:</label>
+            <label className="text-slate-600 dark:text-slate-400 block mb-1 text-[11px] font-semibold">Source Event Series:</label>
             <select
-              value={selectedEvent}
+              value={selectedEventSeriesKey}
               onChange={(e) => handleEventChange(e.target.value)}
               className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded px-2 py-1 text-slate-800 dark:text-slate-200 truncate font-medium"
             >
               {eventsList.map((ev) => (
-                <option key={ev.eventName} value={ev.eventName}>
-                  [{ev.count}] {ev.eventName}
+                <option key={ev.eventSeriesKey} value={ev.eventSeriesKey}>
+                  [{ev.count}] {ev.countryCode} · {ev.eventName} · ID {ev.eventId}{ev.revision !== null ? ` · rev ${ev.revision}` : ''}
                 </option>
               ))}
             </select>
@@ -492,7 +519,7 @@ export const EventExplorerView: React.FC<EventExplorerViewProps> = ({
             <tr>
               <th className="p-2 text-left w-8"></th>
               <th onClick={() => handleSort('timestamp')} className="p-2 text-left cursor-pointer hover:text-slate-900 dark:hover:text-slate-200">
-                Date (UTC) {sortBy === 'timestamp' && (sortDir === 'asc' ? '↑' : '↓')}
+                Date (Broker Server) {sortBy === 'timestamp' && (sortDir === 'asc' ? '↑' : '↓')}
               </th>
               <th className="p-2 text-left">Cur</th>
               <th className="p-2 text-left">Event</th>
@@ -705,7 +732,7 @@ export const EventExplorerView: React.FC<EventExplorerViewProps> = ({
                                 Market Candle Anchor
                               </span>
                               <div>Instrument: {obs.pair} ({obs.eventCurrencyPosition}, Q={obs.directionMultiplier})</div>
-                              <div>P0 Open Time: {obs.p0Timestamp ? new Date(obs.p0Timestamp * 1000).toISOString().replace('T', ' ').slice(0, 19) : 'N/A'}</div>
+                              <div>P0 Open Time (broker server): {obs.p0Timestamp ? new Date(obs.p0Timestamp * 1000).toISOString().replace('T', ' ').slice(0, 19) : 'N/A'}</div>
                               <div>P0 Open Price: {obs.p0 !== null ? obs.p0.toFixed(5) : 'N/A'}</div>
                               <div className="text-[10px] text-slate-500">First complete H1 candle at/after release</div>
                             </div>

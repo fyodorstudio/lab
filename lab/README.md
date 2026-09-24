@@ -10,7 +10,7 @@ The workstation answers the central empirical research question:
 > *"When a specific economic event produces a specific Actual-vs-Forecast ($S_{\text{delta}}$) and Actual-vs-Previous ($M_{\text{delta}}$) result, how does the affected currency tend to behave over the following 1–42 H1 trading bars?"*
 
 Key Capabilities:
-- **Descriptive & Forensic**: 100% reproducible from verified raw files on disk. Zero synthetic data, zero outcome faking, zero lookahead bias.
+- **Descriptive & Forensic**: Reproducible from the raw files on disk, subject to the provenance limitations documented in `CODEX_QUANT_AUDIT.md`.
 - **Relative Magnitude Scoring**: Evaluates surprise and momentum deltas against the historical distribution of the exact event using empirical percentiles (e.g., P75).
 - **Contamination-Free H1 Alignment**: Anchors price measurement at $P_0$ (the open of the first complete H1 candle beginning at or after announcement timestamp), preventing pre-announcement contamination.
 - **Directional Normalization**: Multiplies returns by $Q = +1$ (base) or $Q = -1$ (quote) so positive normalized returns always signify currency appreciation.
@@ -35,8 +35,9 @@ lab/
 │   ├── data/
 │   │   ├── numericParser.ts   # Robust parser for %, K, M, B, commas, negatives, zeros
 │   │   ├── csvReader.ts       # Streaming CSV line parser handling quotes and commas
-│   │   ├── calendarLoader.ts  # Ingestion and cataloging of 126,469 calendar records
-│   │   ├── candleLoader.ts    # Binary search indexing for 1.55M H1 candle bars
+│   │   ├── dataSourceResolver.ts # Complete-v3.1 selection, explicit override, legacy fallback
+│   │   ├── calendarLoader.ts  # Header-driven ingestion and revision-series cataloging
+│   │   ├── candleLoader.ts    # Binary search indexing for H1 candle bars
 │   │   ├── pairDiscovery.ts   # Auto-discovery of 51 FX pairs & base/quote mapping
 │   │   └── cacheManager.ts    # Disk cache serializer
 │   ├── analytics/
@@ -74,18 +75,18 @@ npm install
 npm install --prefix web
 ```
 
-### Step 2: Build the Raw Data Index
-Parses `raw_data/economic calendar/` and `raw_data/fyodor_candles/` and builds the fast-lookup index in `lab/generated-cache/`:
+### Step 2: Build the Data Index
+Selects the newest complete v3.1 export under `tools/mt5/` (or `FYODOR_EXPORT_ROOT` when set), then falls back to the read-only legacy `raw_data/` dataset only when no valid v3.1 source exists. It builds fast-lookup metadata in `lab/generated-cache/`:
 ```bash
 npm run ingest
 ```
-*(Ingestion indexes 126,469 calendar records and 1,548,208 H1 candles in ~3.8 seconds).*
+The validated export indexes 123,054 calendar records and 1,686,617 completed H1 candles across 51 FX instruments.
 
 ### Step 3: Run Automated Tests
 ```bash
 npm test
 ```
-Runs 33 unit and end-to-end integration tests with deterministic fixtures and real raw data audits.
+Runs 70 unit and end-to-end integration tests, including deterministic v3.1 revision/CSV fixtures and real-data audits.
 
 ### Step 4: Run Development Mode
 To run the backend server and Vite dev server:
@@ -159,10 +160,12 @@ This eliminates pre-announcement drift contamination and ensures all post-releas
 - $Q_{\text{quote}} = -1$
 
 $$\text{rawPairReturn}_h = \frac{P_h}{P_0} - 1$$
-$$\text{normalizedReturn}_h = Q \times \text{rawPairReturn}_h$$
+$$\text{eventCurrencySimpleReturn}_h = \begin{cases} P_h/P_0 - 1 & \text{event currency is base} \\ P_0/P_h - 1 & \text{event currency is quote} \end{cases}$$
+
+$$\text{normalizedLogReturn}_h = Q\ln(P_h/P_0)$$
 
 Where $P_h$ is the close of the $h$-th post-event H1 bar ($h \in [1, 42]$).
-- Positive normalized return $\implies$ Event currency strengthened.
+- Positive event-currency return $\implies$ Event currency strengthened.
 - Negative normalized return $\implies$ Event currency weakened.
 
 ### 4.6 Trading Bar Sequencing & Weekend Handling
@@ -187,6 +190,8 @@ $$\text{Positive Direction Rate} = \frac{\operatorname{count}(\text{normalizedRe
 4. **Attribution Confounding**: Clustered simultaneous releases can confound price reaction attribution.
 5. **Retrospective Sample Warning**: Thresholds calculated across the historical sample are descriptive and not lookahead-safe trading backtests.
 6. **No Profitability Claims**: Historical price distributions do not guarantee future market behavior.
+7. **Broker-Time Timestamps**: MT5 calendar and candle timestamps are displayed as broker trade-server wall-clock values; the raw export does not establish a UTC offset.
+8. **Source-Series Identity**: Statistical populations are keyed by MetaQuotes `event_id`. PMI IDs with more than one release per month may still mix flash/final stages because `period` and `revision` were not exported.
 
 ---
 

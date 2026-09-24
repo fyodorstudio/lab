@@ -93,7 +93,7 @@ describe('Walk-Forward and Strict-Lower Percentile Research Integrity', () => {
       // Value -0.2: elements <= -0.2 are -0.5 and -0.2 (2 elements out of 6) -> 33.3%
       const rank = calculatePercentileRank(signedDistribution, -0.2);
       expect(rank).not.toBeNull();
-      expect(rank).toBe(33.3);
+      expect(rank).toBe(33.33333333);
     });
   });
 

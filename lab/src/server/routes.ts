@@ -53,6 +53,8 @@ export function createApiRouter(analyticsService: IAnalyticsService): Router {
     try {
       const currency = req.query.currency as string;
       const eventName = req.query.eventName as string;
+      const eventId = req.query.eventId as string | undefined;
+      const eventSeriesKey = req.query.eventSeriesKey as string | undefined;
       const percentile = req.query.percentile ? parseInt(req.query.percentile as string, 10) : 75;
 
       if (!currency || !eventName) {
@@ -60,7 +62,7 @@ export function createApiRouter(analyticsService: IAnalyticsService): Router {
         return;
       }
 
-      const data = await analyticsService.getDistribution(currency, eventName, percentile);
+      const data = await analyticsService.getDistribution(currency, eventName, percentile, eventId, eventSeriesKey);
       res.json(data);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -179,23 +181,52 @@ export function createApiRouter(analyticsService: IAnalyticsService): Router {
 
         // CSV export
         const headers = [
+          'eventId',
+          'valueId',
+          'eventSeriesKey',
+          'revision',
+          'periodTimestamp',
+          'eventCode',
+          'sourceUnit',
+          'multiplier',
+          'sourceUrl',
+          'actualScaledIntegerRaw',
+          'forecastScaledIntegerRaw',
+          'previousScaledIntegerRaw',
+          'revisedPreviousScaledIntegerRaw',
+          'sourceFile',
           'timestamp',
-          'date',
+          'brokerServerDateTime',
           'currency',
+          'countryCode',
           'eventName',
           'importance',
           'actualRaw',
           'forecastRaw',
           'previousRaw',
+          'revisedPreviousRaw',
           'actual',
           'forecast',
           'previous',
+          'revisedPrevious',
           'surpriseDelta',
           'momentumDelta',
           'surpriseAbsDelta',
           'momentumAbsDelta',
           'surprisePercentileRank',
           'momentumPercentileRank',
+          'surpriseThresholdUsed',
+          'momentumThresholdUsed',
+          'surpriseReferenceN',
+          'momentumReferenceN',
+          'surpriseTieCount',
+          'surpriseTieRatePct',
+          'surpriseLowerRank',
+          'surpriseUpperRank',
+          'momentumTieCount',
+          'momentumTieRatePct',
+          'momentumLowerRank',
+          'momentumUpperRank',
           'surpriseScore',
           'momentumScore',
           'pair',
@@ -205,30 +236,62 @@ export function createApiRouter(analyticsService: IAnalyticsService): Router {
           'p0',
           'simultaneousCount',
           'crossesWeekend',
+          'crossesNonWeekendGap',
           'isFridayRelease',
           ...Array.from({ length: 42 }, (_, i) => `H${i + 1}_return`),
+          ...Array.from({ length: 42 }, (_, i) => `H${i + 1}_rawPairReturn`),
+          ...Array.from({ length: 42 }, (_, i) => `H${i + 1}_normalizedLogReturn`),
         ];
 
         const csvLines = [headers.join(',')];
         for (const obs of obsData.items) {
           const row = [
+            obs.eventId,
+            obs.valueId,
+            obs.eventSeriesKey,
+            obs.revision ?? '',
+            obs.periodTimestamp ?? '',
+            `"${(obs.eventCode || '').replace(/"/g, '""')}"`,
+            `"${(obs.sourceUnit || '').replace(/"/g, '""')}"`,
+            `"${(obs.multiplier || '').replace(/"/g, '""')}"`,
+            `"${(obs.sourceUrl || '').replace(/"/g, '""')}"`,
+            obs.actualScaledIntegerRaw ?? '',
+            obs.forecastScaledIntegerRaw ?? '',
+            obs.previousScaledIntegerRaw ?? '',
+            obs.revisedPreviousScaledIntegerRaw ?? '',
+            `"${obs.sourceFile.replace(/"/g, '""')}"`,
             obs.timestamp,
             `"${obs.date}"`,
             obs.currency,
+            obs.countryCode,
             `"${obs.eventName.replace(/"/g, '""')}"`,
             obs.importance,
             `"${obs.actualRaw || ''}"`,
             `"${obs.forecastRaw || ''}"`,
             `"${obs.previousRaw || ''}"`,
+            `"${obs.revisedPreviousRaw || ''}"`,
             obs.actual ?? '',
             obs.forecast ?? '',
             obs.previous ?? '',
+            obs.revisedPrevious ?? '',
             obs.surpriseDelta ?? '',
             obs.momentumDelta ?? '',
             obs.surpriseAbsDelta ?? '',
             obs.momentumAbsDelta ?? '',
             obs.surprisePercentileRank !== null && obs.surprisePercentileRank !== undefined ? `P${obs.surprisePercentileRank}` : '',
             obs.momentumPercentileRank !== null && obs.momentumPercentileRank !== undefined ? `P${obs.momentumPercentileRank}` : '',
+            obs.surpriseThresholdUsed ?? '',
+            obs.momentumThresholdUsed ?? '',
+            obs.priorSurpriseN ?? '',
+            obs.priorMomentumN ?? '',
+            obs.surpriseTieCount ?? '',
+            obs.surpriseTieRate ?? '',
+            obs.surpriseLowerRank ?? '',
+            obs.surpriseUpperRank ?? '',
+            obs.momentumTieCount ?? '',
+            obs.momentumTieRate ?? '',
+            obs.momentumLowerRank ?? '',
+            obs.momentumUpperRank ?? '',
             obs.surpriseScore ?? '',
             obs.momentumScore ?? '',
             obs.pair,
@@ -238,8 +301,11 @@ export function createApiRouter(analyticsService: IAnalyticsService): Router {
             obs.p0 ?? '',
             obs.simultaneousReleaseCount,
             obs.crossesWeekend,
+            obs.crossesNonWeekendGap,
             obs.isFridayRelease,
             ...obs.returns.map((r) => (r !== null ? r.toFixed(6) : '')),
+            ...obs.rawReturns.map((r) => (r !== null ? r.toFixed(6) : '')),
+            ...obs.logReturns.map((r) => (r !== null ? r.toFixed(6) : '')),
           ];
           csvLines.push(row.join(','));
         }

@@ -1,6 +1,6 @@
 # Macroeconomic Post-Release Quantitative Workstation
 
-An institutional-grade macroeconomic quantitative workstation for investigating post-release FX market reaction dynamics across 1–42 H1 trading horizons following scheduled economic events.
+A macroeconomic quantitative research workstation for investigating post-release FX market reaction dynamics across 1–42 H1 trading horizons following scheduled economic events. See [`CODEX_QUANT_AUDIT.md`](CODEX_QUANT_AUDIT.md) before drawing research conclusions.
 
 ---
 
@@ -15,10 +15,11 @@ GEMINI/                           <- Root Repository Directory (C:\dev\Fyodor Ma
 ├── package.json                  <- Root scripts forwarding to lab/
 ├── .gitignore                    <- Git exclusion for build artifacts and dependencies
 ├── README.md                     <- Master architectural and methodology documentation
-├── raw_data/                     <- [STRICT READ-ONLY] Verified empirical source data
-│   ├── economic calendar/        <- Repaired master historical calendar CSV (126,469 records)
-│   ├── fyodor_candles/           <- 51 FX instrument H1 candle CSV files (3.6M+ bars)
+├── raw_data/                     <- [STRICT READ-ONLY] Legacy empirical source data/fallback
+│   ├── economic calendar/        <- Legacy repaired master historical calendar CSV
+│   ├── fyodor_candles/           <- Legacy FX instrument H1 candle CSV files
 │   └── research paper / ...      <- Academic and empirical reference materials
+├── tools/mt5/                    <- Versioned MT5 exporter source and v3.1 export snapshots
 │
 └── lab/                          <- Quantitative Research Engine & Web UI
     ├── package.json              <- Lab dependencies (concurrently, express, vite, vitest, etc.)
@@ -30,7 +31,7 @@ GEMINI/                           <- Root Repository Directory (C:\dev\Fyodor Ma
     │   ├── analytics/            <- Scorer, alignment engine, statistics & 5x5 matrix
     │   ├── server/               <- Express REST API routes, CSV/JSON exporters
     │   └── cli/                  <- Data ingestion and forensic audit CLI
-    ├── tests/                    <- Vitest unit and integration test suite (49 passing tests)
+    ├── tests/                    <- Vitest unit and integration test suite (70 passing tests)
     └── web/                      <- Reactive Research Dashboard (React, Tailwind, Lucide)
         ├── src/
         │   ├── components/       <- H1–H42 path charts, 5x5 matrix, distribution tables
@@ -71,7 +72,7 @@ http://localhost:5173
 ```bash
 npm test
 ```
-Executes 49 automated tests covering:
+Executes the current automated suite covering:
 - Empirical percentile rank calculations and sorting logic
 - Post-release candle alignment and zero lookahead enforcement
 - Currency quotation direction normalization ($Q = +1$ vs $Q = -1$)
@@ -109,10 +110,14 @@ To prevent inverse-reaction distortion, price movement is normalized based on th
 - **Base Currency Position** ($Q = +1$): e.g., USD in `USDJPY`. A price increase indicates USD appreciation.
 - **Quote Currency Position** ($Q = -1$): e.g., USD in `EURUSD`. A price decrease indicates USD appreciation.
 
-$$\text{normalizedReturn}_h = Q \times \frac{\text{Close}_h - P_0}{P_0}$$
+For event currency in the pair base position:
+$$r_h = \frac{P_h}{P_0} - 1$$
+For event currency in the quote position:
+$$r_h = \frac{P_0}{P_h} - 1$$
+The separately preserved symmetric log return is $Q\ln(P_h/P_0)$.
 
 Where:
-- $P_0$: Closing price of the trading bar immediately preceding or containing the exact release timestamp.
+- $P_0$: Open of the first complete H1 bar beginning at or after the release timestamp.
 - $\text{Close}_h$: Closing price of the $h$-th trading bar following $P_0$ ($h \in [1, 42]$).
 
 ### Descriptive Positive Direction Rate
@@ -129,7 +134,9 @@ To ensure complete mathematical audibility, scoring is fully transparent and der
 
 ### Empirical Percentile Rank
 For any release with absolute delta $\delta = |A - F|$, its empirical percentile rank within the historical distribution of non-zero deltas is:
-$$\text{Percentile Rank} = \frac{|\{v \in \text{historicalNonzeroDeltas} : v \le \delta\}|}{N} \times 100$$
+$$\text{Percentile Rank} = \frac{|\{v \in \text{historicalNonzeroDeltas} : v < \delta\}|}{N} \times 100$$
+
+Threshold quantiles use Hyndman–Fan type 7 linear interpolation: index $(N-1)p$.
 
 ### Numerical Threshold Table (P50–P95)
 Displayed directly alongside delta distribution histograms:
@@ -173,6 +180,9 @@ Provides a step-by-step mathematical breakdown for every historical event releas
 
 This application operates under a strict anti-hallucination covenant:
 - **Zero Mock Data**: Never substitutes synthetic, randomized, or mock numbers for raw calendar observations.
-- **Zero Lookahead**: Indicator calculations and candle alignments never peek forward into future bars (`candles[:i]` strictly enforced).
-- **Physical Reproducibility**: Every metric is 100% reproducible directly from raw files in `raw_data/`.
+- **Scoped Lookahead Control**: Walk-forward percentile classification uses only observations with earlier timestamps. This does not by itself remove every possible backtest bias.
+- **Timestamp Convention**: Calendar and candle integers are treated as broker trade-server wall-clock values, not silently converted to UTC.
+- **Source Selection**: `FYODOR_EXPORT_ROOT` may select an explicit complete v3.1 export; otherwise the newest complete v3.1 export is used, with `raw_data/` as a legacy fallback.
+- **Timestamp Provenance**: V3.1 records broker/server identity and the snapshot server-minus-GMT offset; historical DST conversion is deliberately not inferred.
+- **Physical Reproducibility**: Every metric is reproducible from the selected manifested export (or the documented legacy fallback).
 - **Non-Destructive Outlier Handling**: Statistical distributions preserve 100% of historical samples without silent clipping or truncation.

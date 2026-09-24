@@ -26,7 +26,7 @@ export const RECOGNIZED_FX_CURRENCIES = [
 ] as const;
 
 /**
- * Scans candle files in raw_data/fyodor_candles and discovers FX instruments.
+ * Scans the selected source's candle directory and discovers FX instruments.
  * Filters out crypto and commodities to preserve quantitative FX purity.
  */
 export function discoverFXPairs(candlesDir: string): Map<string, FXPairInfo> {

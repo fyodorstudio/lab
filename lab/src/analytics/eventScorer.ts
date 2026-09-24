@@ -61,11 +61,10 @@ export function scoreDelta(
     return 1;
   }
 
-  // If there is no historical threshold (e.g. only 0 deltas in history),
-  // default to medium score
-  const effectiveThreshold = threshold !== null && Number.isFinite(threshold)
-    ? canonicalizeNumber(threshold)!
-    : Infinity;
+  // A nonzero observation cannot be magnitude-classified without a valid
+  // reference threshold. Callers must not silently default it to "medium".
+  if (threshold === null || !Number.isFinite(threshold)) return null;
+  const effectiveThreshold = canonicalizeNumber(threshold)!;
 
   // Strict inequality: absDelta > effectiveThreshold + epsilon
   // abs(delta) == threshold must remain magnitude 2
@@ -147,5 +146,4 @@ export function getScoreClassificationReason(
 
   return `Score ${score}`;
 }
-
 

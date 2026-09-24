@@ -86,7 +86,7 @@ export const Layout: React.FC<LayoutProps> = ({
           <div className="flex items-center space-x-2.5">
             <div className="hidden sm:flex items-center space-x-2 bg-slate-100 dark:bg-slate-950/80 px-2.5 py-1 rounded border border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-600 dark:text-slate-400">
               <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"></span>
-              <span>raw_data/ verified</span>
+              <span>Source loaded</span>
             </div>
 
             {onOpenExport && (

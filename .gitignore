@@ -9,3 +9,4 @@ exports/
 *.log
 .DS_Store
 raw_data/
+tools/mt5/FyodorResearchExport_v3_*_server/

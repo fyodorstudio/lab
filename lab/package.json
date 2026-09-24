@@ -6,6 +6,7 @@
   "main": "dist/server/server.js",
   "scripts": {
     "ingest": "tsx src/cli/ingest.ts",
+    "audit:quant": "tsx src/cli/quantAudit.ts",
     "index": "tsx src/cli/ingest.ts",
     "server": "tsx src/server/server.ts",
     "dev:server": "tsx watch src/server/server.ts",

@@ -38,6 +38,10 @@ describe('Event Scorer', () => {
     expect(scoreDelta(null, null, 0.5)).toBeNull();
   });
 
+  it('returns null for a nonzero delta when no magnitude threshold exists', () => {
+    expect(scoreDelta(2.6, 2.0, null)).toBeNull();
+  });
+
   it('calculates P75 and other configurable percentiles from nonzero deltas', () => {
     // Nonzero deltas: 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8
     const nonzeroDeltas = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8];

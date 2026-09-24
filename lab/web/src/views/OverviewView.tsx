@@ -40,7 +40,7 @@ export const OverviewView: React.FC = () => {
           <span>Macroeconomic &amp; Market Dataset Overview</span>
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-1">
-          Forensic audit of verified files ingested from raw_data/
+          Forensic audit of the selected research dataset
         </p>
       </div>
 

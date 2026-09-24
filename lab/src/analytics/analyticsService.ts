@@ -27,6 +27,7 @@ import {
   canonicalizeNumber,
   formatWithUnit,
   TieMetrics,
+  formatBrokerServerDateTime,
 } from '../shared/utils.js';
 import { calculateEventThresholds, scoreDelta, getScoreClassificationReason } from './eventScorer.js';
 import { alignEventToCandles } from './eventAligner.js';
@@ -46,9 +47,9 @@ import {
 export interface IAnalyticsService {
   getOverview(): Promise<OverviewMetrics>;
   getCurrencies(): Promise<string[]>;
-  getEvents(currency: string, family?: string): Promise<Array<{ eventName: string; family: string; count: number; importance: string }>>;
+  getEvents(currency: string, family?: string): Promise<Array<{ eventId: string; eventSeriesKey: string; revision: number | null; countryCode: string; eventName: string; family: string; count: number; importance: string; averageReleasesPerActiveMonth: number; identityWarning?: string }>>;
   getPairs(currency: string): Promise<FXPairInfo[]>;
-  getDistribution(currency: string, eventName: string, percentile?: number): Promise<{ surprise: DistributionResponse; momentum: DistributionResponse }>;
+  getDistribution(currency: string, eventName: string, percentile?: number, eventId?: string, eventSeriesKey?: string): Promise<{ surprise: DistributionResponse; momentum: DistributionResponse }>;
   getPattern(query: PatternQueryFilters): Promise<PatternResponse>;
   getObservations(query: PatternQueryFilters, page?: number, pageSize?: number, sortBy?: string, sortDir?: 'asc' | 'desc'): Promise<{ total: number; page: number; pageSize: number; items: EventObservation[] }>;
   getRawEventInspection(
@@ -134,32 +135,42 @@ export class AnalyticsService implements IAnalyticsService {
     return metrics ? metrics.availableCurrencies : [];
   }
 
-  public async getEvents(currency: string, family?: string): Promise<Array<{ eventName: string; family: string; count: number; importance: string }>> {
+  public async getEvents(currency: string, family?: string): Promise<Array<{ eventId: string; eventSeriesKey: string; revision: number | null; countryCode: string; eventName: string; family: string; count: number; importance: string; averageReleasesPerActiveMonth: number; identityWarning?: string }>> {
     const releases = this.calendarRepo.getParsedReleases().filter((r) => r.currency.toUpperCase() === currency.toUpperCase());
-    const eventMap = new Map<string, { family: string; count: number; importance: string }>();
+    const eventMap = new Map<string, { eventId: string; eventSeriesKey: string; revision: number | null; countryCode: string; eventName: string; family: string; count: number; importance: string; activeMonths: Set<string> }>();
 
     for (const r of releases) {
       if (family && r.eventFamily.toLowerCase() !== family.toLowerCase()) {
         continue;
       }
-      const existing = eventMap.get(r.eventName);
+      const existing = eventMap.get(r.eventSeriesKey);
       if (!existing) {
-        eventMap.set(r.eventName, {
+        eventMap.set(r.eventSeriesKey, {
+          eventId: r.eventId,
+          eventSeriesKey: r.eventSeriesKey,
+          revision: r.revision,
+          countryCode: r.countryCode,
+          eventName: r.eventName,
           family: r.eventFamily,
           count: 1,
           importance: r.importance,
+          activeMonths: new Set([r.date.slice(0, 7)]),
         });
       } else {
         existing.count++;
+        existing.activeMonths.add(r.date.slice(0, 7));
       }
     }
 
-    const result = Array.from(eventMap.entries()).map(([eventName, data]) => ({
-      eventName,
-      family: data.family,
-      count: data.count,
-      importance: data.importance,
-    }));
+    const result = Array.from(eventMap.values()).map(({ activeMonths, ...series }) => {
+      const averageReleasesPerActiveMonth = series.count / Math.max(1, activeMonths.size);
+      const identityWarning = /pmi/i.test(series.eventName) && averageReleasesPerActiveMonth > 1.5
+        ? series.revision === null
+          ? 'This legacy event_id averages more than 1.5 releases per active month and may combine flash/final stages; the legacy file lacks period/revision metadata.'
+          : 'This revision-specific source series still averages more than 1.5 releases per active month and may contain flash/final duplication; inspect its period and revision metadata before interpreting it as one monthly release stage.'
+        : undefined;
+      return { ...series, averageReleasesPerActiveMonth, identityWarning };
+    });
 
     result.sort((a, b) => b.count - a.count);
     return result;
@@ -172,9 +183,11 @@ export class AnalyticsService implements IAnalyticsService {
   public async getDistribution(
     currency: string,
     eventName: string,
-    percentile: number = DEFAULT_THRESHOLD_PERCENTILE
+    percentile: number = DEFAULT_THRESHOLD_PERCENTILE,
+    eventId?: string,
+    eventSeriesKey?: string
   ): Promise<{ surprise: DistributionResponse; momentum: DistributionResponse }> {
-    const releases = this.calendarRepo.getReleasesForEvent(currency, eventName);
+    const releases = this.calendarRepo.getReleasesForEvent(currency, eventName, eventId, eventSeriesKey);
 
     const surpriseAbsDeltas: number[] = [];
     const momentumAbsDeltas: number[] = [];
@@ -182,13 +195,18 @@ export class AnalyticsService implements IAnalyticsService {
     const nonzeroMomentumAbs: number[] = [];
 
     for (const r of releases) {
+      // Distribution tables must use the same complete-A/F/P eligibility rule
+      // as retrospective and walk-forward scoring populations.
+      if (!r.hasCompleteAFP) continue;
       if (r.surpriseAbsDelta !== null) {
         surpriseAbsDeltas.push(r.surpriseAbsDelta);
-        if (r.surpriseAbsDelta > 1e-12) nonzeroSurpriseAbs.push(r.surpriseAbsDelta);
+        const canonical = canonicalizeNumber(r.surpriseAbsDelta)!;
+        if (canonical > FLOAT_EPSILON) nonzeroSurpriseAbs.push(canonical);
       }
       if (r.momentumAbsDelta !== null) {
         momentumAbsDeltas.push(r.momentumAbsDelta);
-        if (r.momentumAbsDelta > 1e-12) nonzeroMomentumAbs.push(r.momentumAbsDelta);
+        const canonical = canonicalizeNumber(r.momentumAbsDelta)!;
+        if (canonical > FLOAT_EPSILON) nonzeroMomentumAbs.push(canonical);
       }
     }
 
@@ -228,7 +246,7 @@ export class AnalyticsService implements IAnalyticsService {
       percentile,
       thresholdValue: sThreshVal,
       formattedThreshold: sFormatted,
-      meaning: `${percentile}% of historical nonzero absolute surprise deltas |A - F| are <= ${sFormatted}, and ${100 - percentile}% are > ${sFormatted}`,
+      meaning: `P${percentile} of the sorted nonzero |A - F| population using linear interpolation at index (N - 1) * ${percentile}/100 = ${sFormatted}`,
       scoreBoundaryDescription: `|A - F| <= ${sFormatted} -> magnitude score 2; |A - F| > ${sFormatted} -> magnitude score 3`,
     };
 
@@ -238,7 +256,7 @@ export class AnalyticsService implements IAnalyticsService {
       percentile,
       thresholdValue: mThreshVal,
       formattedThreshold: mFormatted,
-      meaning: `${percentile}% of historical nonzero absolute momentum deltas |A - P| are <= ${mFormatted}, and ${100 - percentile}% are > ${mFormatted}`,
+      meaning: `P${percentile} of the sorted nonzero |A - P| population using linear interpolation at index (N - 1) * ${percentile}/100 = ${mFormatted}`,
       scoreBoundaryDescription: `|A - P| <= ${mFormatted} -> magnitude score 2; |A - P| > ${mFormatted} -> magnitude score 3`,
     };
 
@@ -282,7 +300,7 @@ export class AnalyticsService implements IAnalyticsService {
     const minHistory = query.minHistory ?? DEFAULT_MIN_WALK_FORWARD_HISTORY;
     const pair = query.pair || 'EURUSD';
 
-    const releases = this.calendarRepo.getReleasesForEvent(currency, eventName);
+    const releases = this.calendarRepo.getReleasesForEvent(currency, eventName, query.eventId, query.eventSeriesKey);
 
     // Sort chronologically ascending by timestamp
     const sortedReleases = [...releases].sort((a, b) => a.timestamp - b.timestamp);
@@ -406,6 +424,7 @@ export class AnalyticsService implements IAnalyticsService {
           logReturns: alignment.logReturns,
           rawReturns: alignment.rawReturns,
           crossesWeekend: alignment.crossesWeekend,
+          crossesNonWeekendGap: alignment.crossesNonWeekendGap,
           isFridayRelease: alignment.isFridayRelease,
         };
 
@@ -458,7 +477,7 @@ export class AnalyticsService implements IAnalyticsService {
 
           if (isComplete && hasA && hasF && r.surpriseAbsDelta !== null) {
             const sAbs = canonicalizeNumber(r.surpriseAbsDelta)!;
-            if (sAbs <= FLOAT_EPSILON) {
+            if (sAbs <= FLOAT_EPSILON && hasMinSurprise) {
               surpriseScore = 1;
               surprisePercentileRank = null; // Exact match: N/A
               surpriseReason = getScoreClassificationReason('Surprise', r.actual, r.forecast, sAbs, sThreshold, percentile, surpriseScore, { scoringMode: 'walkForward', priorN: sortedPriorSurprise.length, minHistory });
@@ -490,7 +509,7 @@ export class AnalyticsService implements IAnalyticsService {
 
           if (isComplete && hasA && hasP && r.momentumAbsDelta !== null) {
             const mAbs = canonicalizeNumber(r.momentumAbsDelta)!;
-            if (mAbs <= FLOAT_EPSILON) {
+            if (mAbs <= FLOAT_EPSILON && hasMinMomentum) {
               momentumScore = 1;
               momentumPercentileRank = null; // Exact match: N/A
               momentumReason = getScoreClassificationReason('Momentum', r.actual, r.previous, mAbs, mThreshold, percentile, momentumScore, { scoringMode: 'walkForward', priorN: sortedPriorMomentum.length, minHistory });
@@ -544,6 +563,7 @@ export class AnalyticsService implements IAnalyticsService {
             logReturns: alignment.logReturns,
             rawReturns: alignment.rawReturns,
             crossesWeekend: alignment.crossesWeekend,
+            crossesNonWeekendGap: alignment.crossesNonWeekendGap,
             isFridayRelease: alignment.isFridayRelease,
           };
 
@@ -645,16 +665,16 @@ export class AnalyticsService implements IAnalyticsService {
 
     // Selected horizon for Score Matrix
     const targetHorizon = query.horizon && query.horizon >= 1 && query.horizon <= 42 ? query.horizon : 1;
-    const scoreMatrix = calculateScoreMatrix(allObservations, targetHorizon);
+    const scoreMatrix = calculateScoreMatrix(filteredObservations, targetHorizon);
 
     // Precompute matrices for all key research horizons so UI switches seamlessly
     const scoreMatrices: Record<number, ScoreMatrixData> = {
-      1: calculateScoreMatrix(allObservations, 1),
-      4: calculateScoreMatrix(allObservations, 4),
-      8: calculateScoreMatrix(allObservations, 8),
-      12: calculateScoreMatrix(allObservations, 12),
-      24: calculateScoreMatrix(allObservations, 24),
-      42: calculateScoreMatrix(allObservations, 42),
+      1: calculateScoreMatrix(filteredObservations, 1),
+      4: calculateScoreMatrix(filteredObservations, 4),
+      8: calculateScoreMatrix(filteredObservations, 8),
+      12: calculateScoreMatrix(filteredObservations, 12),
+      24: calculateScoreMatrix(filteredObservations, 24),
+      42: calculateScoreMatrix(filteredObservations, 42),
     };
     if (!scoreMatrices[targetHorizon]) {
       scoreMatrices[targetHorizon] = scoreMatrix;
@@ -662,6 +682,17 @@ export class AnalyticsService implements IAnalyticsService {
 
     // Build warnings
     const warnings: string[] = [];
+    if (/pmi/i.test(query.eventName)) {
+      const sourceSeries = this.calendarRepo.getReleasesForEvent(currency, query.eventName, query.eventId, query.eventSeriesKey);
+      const activeMonths = new Set(sourceSeries.map((release) => release.date.slice(0, 7))).size;
+      const cadence = sourceSeries.length / Math.max(1, activeMonths);
+      if (cadence > 1.5) {
+        const seriesIdentity = sourceSeries[0]?.eventSeriesKey ?? query.eventSeriesKey ?? 'unknown';
+        warnings.push(sourceSeries[0]?.revision === null
+          ? `IDENTITY WARNING: legacy series ${seriesIdentity} averages ${cadence.toFixed(2)} releases per active month and may combine flash/final stages. Period/revision metadata is unavailable.`
+          : `IDENTITY WARNING: revision-specific series ${seriesIdentity} averages ${cadence.toFixed(2)} releases per active month. Inspect period/revision metadata before treating it as one monthly release stage.`);
+      }
+    }
     const n = filteredObservations.length;
     if (n === 0) {
       warnings.push('No observations match the current filter criteria.');
@@ -682,6 +713,13 @@ export class AnalyticsService implements IAnalyticsService {
     if (weekendCount > 0 && query.weekendFilter !== 'excludeCrossingWeekend') {
       warnings.push(
         `${weekendCount} of ${n} paths cross a market weekend gap. Sunday open gaps may influence returns.`
+      );
+    }
+
+    const nonWeekendGapCount = filteredObservations.filter((o) => o.crossesNonWeekendGap).length;
+    if (nonWeekendGapCount > 0) {
+      warnings.push(
+        `${nonWeekendGapCount} of ${n} paths cross one or more missing non-weekend H1 timestamps. Horizons count available bars, so elapsed wall-clock time is longer for those paths.`
       );
     }
 
@@ -729,6 +767,7 @@ export class AnalyticsService implements IAnalyticsService {
         missingValueExclusions: allObservations.length - allObservations.filter((o) => o.hasCompleteAFP).length,
         simultaneousReleaseCount: simultaneousCount,
         weekendCrossingCount: weekendCount,
+        nonWeekendGapCount,
         fridayReleaseCount: filteredObservations.filter((o) => o.isFridayRelease).length,
         pair: selectedPair,
         eventCurrencyPosition: selectedPair.slice(0, 3) === currency ? 'base' : 'quote',
@@ -810,8 +849,23 @@ export class AnalyticsService implements IAnalyticsService {
       return null;
     }
 
-    const releases = this.calendarRepo.getReleasesForEvent(rawRow.currency, rawRow.eventName);
-    const parsedRelease = releases.find((r) => r.eventId === eventId && r.valueId === valueId) || releases[0];
+    const parsedRelease = this.calendarRepo.getParsedReleases().find(
+      (release) => release.eventId === eventId && (release.valueId === valueId || !valueId)
+    );
+    if (!parsedRelease) return null;
+    const releases = this.calendarRepo.getReleasesForEvent(
+      rawRow.currency,
+      rawRow.eventName,
+      rawRow.eventId,
+      parsedRelease.eventSeriesKey
+    );
+    const activeMonths = new Set(releases.map((release) => release.date.slice(0, 7))).size;
+    const averageReleasesPerActiveMonth = releases.length / Math.max(1, activeMonths);
+    const identityWarning = /pmi/i.test(rawRow.eventName) && averageReleasesPerActiveMonth > 1.5
+      ? parsedRelease.revision === null
+        ? 'This legacy source event_id may combine flash/final stages; period/revision metadata is unavailable.'
+        : 'This revision-specific source series still has unusually high monthly cadence. Inspect its exported period/revision metadata before treating it as one release stage.'
+      : null;
 
     // Reference populations depending on scoringMode
     const referenceReleases = scoringMode === 'walkForward'
@@ -851,7 +905,7 @@ export class AnalyticsService implements IAnalyticsService {
     let surpriseReason: string;
 
     if (parsedRelease.hasCompleteAFP && parsedRelease.actual !== null && parsedRelease.forecast !== null && sAbs !== null) {
-      if (sAbs <= FLOAT_EPSILON) {
+      if (sAbs <= FLOAT_EPSILON && hasMinSurprise) {
         surpriseScore = 1;
         surprisePercentileRank = null; // Exact match: N/A
         surpriseReason = getScoreClassificationReason('Surprise', parsedRelease.actual, parsedRelease.forecast, sAbs, surpriseThreshold, thresholdPercentile, surpriseScore, { scoringMode, priorN: sortedSurprise.length, minHistory });
@@ -876,7 +930,7 @@ export class AnalyticsService implements IAnalyticsService {
     let momentumReason: string;
 
     if (parsedRelease.hasCompleteAFP && parsedRelease.actual !== null && parsedRelease.previous !== null && mAbs !== null) {
-      if (mAbs <= FLOAT_EPSILON) {
+      if (mAbs <= FLOAT_EPSILON && hasMinMomentum) {
         momentumScore = 1;
         momentumPercentileRank = null; // Exact match: N/A
         momentumReason = getScoreClassificationReason('Momentum', parsedRelease.actual, parsedRelease.previous, mAbs, momentumThreshold, thresholdPercentile, momentumScore, { scoringMode, priorN: sortedMomentum.length, minHistory });
@@ -908,6 +962,19 @@ export class AnalyticsService implements IAnalyticsService {
       name: 'Surprise (|Actual - Forecast|)',
       scoringMode,
       classificationModeLabel: scoringMode === 'walkForward' ? WALK_FORWARD_LABEL : RETROSPECTIVE_LABEL,
+      referencePopulationIdentity: {
+        eventSeriesKey: parsedRelease.eventSeriesKey,
+        eventId: parsedRelease.eventId,
+        countryCode: parsedRelease.countryCode,
+        currency: parsedRelease.currency,
+        eventName: parsedRelease.eventName,
+        revision: parsedRelease.revision,
+        periodTimestamp: parsedRelease.periodTimestamp,
+        sourceSeriesObservations: releases.length,
+        activeMonths,
+        averageReleasesPerActiveMonth,
+        identityWarning,
+      },
       rawA: rawRow.actualRaw,
       rawF: rawRow.forecastRaw,
       parsedA: parsedRelease.actual,
@@ -982,7 +1049,7 @@ export class AnalyticsService implements IAnalyticsService {
         for (let i = start; i < end; i++) {
           candleContext.push({
             time: candleSeries.times[i],
-            date: new Date(candleSeries.times[i] * 1000).toISOString(),
+            date: formatBrokerServerDateTime(candleSeries.times[i]),
             open: candleSeries.opens[i],
             high: candleSeries.highs[i],
             low: candleSeries.lows[i],
@@ -1054,6 +1121,7 @@ export class AnalyticsService implements IAnalyticsService {
         logReturns: alignment.logReturns,
         rawReturns: alignment.rawReturns,
         crossesWeekend: alignment.crossesWeekend,
+        crossesNonWeekendGap: alignment.crossesNonWeekendGap,
         isFridayRelease: alignment.isFridayRelease,
       };
 
@@ -1091,9 +1159,30 @@ export class AnalyticsService implements IAnalyticsService {
   public async getDataQuality(): Promise<any> {
     const overview = await this.getOverview();
     const pairs = Array.from(this.pairsMap.values());
+    const manifest = this.calendarRepo.getSourceMetadata();
+    const isV31 = manifest.schema_version === 'fyodor-mt5-research-export/3.1.0';
 
     return {
       overview,
+      calendarProvenance: {
+        sourceFilename: isV31 ? 'calendar_releases.csv' : 'fyodor_calendar_master_history_repaired.csv',
+        provider: isV31 ? 'MetaQuotes economic calendar via MetaTrader 5' : 'MetaQuotes / MetaTrader 5 economic calendar (inferred)',
+        schemaVersion: manifest.schema_version || 'legacy/unversioned',
+        exporterVersion: manifest.exporter_version || null,
+        exportId: manifest.export_id || null,
+        terminalCompany: manifest.terminal_company || null,
+        accountCompany: manifest.account_company || null,
+        accountServer: manifest.account_server || null,
+        snapshotServerUtcOffsetSeconds: manifest.trade_server_minus_gmt_seconds_snapshot || null,
+        timestampConvention: manifest.timestamp_convention || 'Broker trade-server wall-clock encoded as Unix-like seconds; historical UTC offsets are not preserved',
+        preservedFields: isV31
+          ? ['event_id', 'value_id', 'timestamp', 'period', 'revision', 'currency', 'country_code', 'event_name', 'importance', 'impact_type', 'event_code', 'event_type', 'sector', 'frequency', 'time_mode', 'unit', 'multiplier', 'digits', 'source_url', 'actual', 'forecast', 'previous', 'revised_previous', 'raw scaled integers']
+          : ['event_id', 'value_id', 'timestamp', 'currency', 'country_code', 'event_name', 'importance', 'actual', 'forecast', 'previous', 'revised_previous'],
+        missingMetaQuotesFields: isV31 ? [] : ['period', 'revision', 'frequency', 'unit', 'multiplier', 'digits', 'source_url', 'event_code'],
+        provenanceStatus: isV31
+          ? 'Manifested v3.1 exporter output; no calendar repair transform is applied by the lab.'
+          : 'Legacy repaired file: repair transformation provenance is unknown.',
+      },
       pairsAudit: pairs.map((p) => ({
         pair: p.pair,
         base: p.base,
@@ -1103,7 +1192,7 @@ export class AnalyticsService implements IAnalyticsService {
         earliestDate: p.earliestDate,
         latestDate: p.latestDate,
       })),
-      duplicateResolution: 'Autoritative single source file candles_{PAIR}_H1.csv selected for each instrument.',
+      duplicateResolution: 'Authoritative single source file candles_{PAIR}_H1.csv selected for each instrument.',
     };
   }
 }

@@ -8,10 +8,25 @@ export interface AlignedPathResult {
   logReturns: Array<number | null>; // mathematically symmetric normalized log returns: Q * ln(Pt/P0) (length 42)
   rawReturns: Array<number | null>; // raw pair returns (length 42)
   crossesWeekend: boolean;
+  crossesNonWeekendGap: boolean;
   isFridayRelease: boolean;
   eventCurrencyPosition: 'base' | 'quote';
   directionMultiplier: 1 | -1;
   availableHorizonCount: number;
+}
+
+/**
+ * Returns true only when missing wall-clock hours actually include a Saturday
+ * or Sunday in the encoded broker-server calendar. A generic data gap is not
+ * automatically a weekend.
+ */
+export function gapCrossesWeekend(previousTimestamp: number, currentTimestamp: number): boolean {
+  if (currentTimestamp - previousTimestamp <= 3600) return false;
+  for (let timestamp = previousTimestamp + 3600; timestamp < currentTimestamp; timestamp += 3600) {
+    const day = new Date(timestamp * 1000).getUTCDay();
+    if (day === 0 || day === 6) return true;
+  }
+  return false;
 }
 
 /**
@@ -36,6 +51,7 @@ export function alignEventToCandles(
       logReturns: Array(42).fill(null),
       rawReturns: Array(42).fill(null),
       crossesWeekend: false,
+      crossesNonWeekendGap: false,
       isFridayRelease,
       eventCurrencyPosition: position,
       directionMultiplier: multiplier,
@@ -55,6 +71,7 @@ export function alignEventToCandles(
       logReturns: Array(42).fill(null),
       rawReturns: Array(42).fill(null),
       crossesWeekend: false,
+      crossesNonWeekendGap: false,
       isFridayRelease,
       eventCurrencyPosition: position,
       directionMultiplier: multiplier,
@@ -73,6 +90,7 @@ export function alignEventToCandles(
       logReturns: Array(42).fill(null),
       rawReturns: Array(42).fill(null),
       crossesWeekend: false,
+      crossesNonWeekendGap: false,
       isFridayRelease,
       eventCurrencyPosition: position,
       directionMultiplier: multiplier,
@@ -84,6 +102,7 @@ export function alignEventToCandles(
   const logReturns: Array<number | null> = [];
   const rawReturns: Array<number | null> = [];
   let crossesWeekend = false;
+  let crossesNonWeekendGap = false;
   let availableCount = 0;
 
   for (let h = 1; h <= 42; h++) {
@@ -115,7 +134,11 @@ export function alignEventToCandles(
         const prevCandleTime = candleSeries.times[candleIdx - 1];
         const currentCandleTime = candleSeries.times[candleIdx];
         if (currentCandleTime - prevCandleTime > 3600) {
-          crossesWeekend = true;
+          if (gapCrossesWeekend(prevCandleTime, currentCandleTime)) {
+            crossesWeekend = true;
+          } else {
+            crossesNonWeekendGap = true;
+          }
         }
       }
     } else {
@@ -133,6 +156,7 @@ export function alignEventToCandles(
     logReturns,
     rawReturns,
     crossesWeekend,
+    crossesNonWeekendGap,
     isFridayRelease,
     eventCurrencyPosition: position,
     directionMultiplier: multiplier,
