@@ -1,5 +1,7 @@
 # Fyodor MT5 Research Exporter v3.1
 
+The source/compiled exporter live here alongside two **ignored, large, timestamped data snapshots**. Keep the validated `FyodorResearchExport_v3_20260923_234930_server` snapshot in its current location: the research code and frozen protocols pin that path. The earlier `233418` snapshot is malformed, but is retained for provenance; never select it for research. Do not move or delete either as a documentation cleanup. See the [repository research roadmap](../../docs/FMS_RESEARCH_ROADMAP.md).
+
 `FyodorResearchExporterV3.mq5` creates a new timestamped export folder on every run. It does not modify an earlier dataset. Version 3.1 uses quoted UTF-8 CSV text fields and defaults to exporting only symbols whose MT5 calculation mode is Forex.
 
 ## Before running

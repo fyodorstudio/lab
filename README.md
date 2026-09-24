@@ -1,5 +1,7 @@
 # Macroeconomic Post-Release Quantitative Workstation
 
+> **Current research priority (2026-09-24):** Discover and validate a small number of defensible FMS setups for *demo* forward testing, with no guaranteed edge. Start at the [FMS research roadmap](docs/FMS_RESEARCH_ROADMAP.md) and [documentation map](docs/README.md). The timestamp-only [eligibility inventory](lab/research/FMS_ELIGIBILITY_INVENTORY.md) is complete; it is not a profitability result. The H1 workstation described below is existing software and historical Phase 1 context, **not** an approved trading strategy. Some old counts and roadmap language below predate the latest inventory; follow the linked generated report for current counts.
+
 A macroeconomic quantitative research workstation for investigating post-release FX market reaction dynamics across 1–42 H1 trading horizons following scheduled economic events. See [`CODEX_QUANT_AUDIT.md`](docs/CODEX_QUANT_AUDIT.md) before drawing research conclusions.
 
 ---
@@ -31,7 +33,7 @@ GEMINI/                           <- Root Repository Directory (C:\dev\Fyodor Ma
     │   ├── analytics/            <- Scorer, alignment engine, statistics & 5x5 matrix
     │   ├── server/               <- Express REST API routes, CSV/JSON exporters
     │   └── cli/                  <- Data ingestion and forensic audit CLI
-    ├── tests/                    <- Vitest unit and integration test suite (70 passing tests)
+    ├── tests/                    <- Vitest unit and integration test suite (run npm test for current count)
     └── web/                      <- Reactive Research Dashboard (React, Tailwind, Lucide)
         ├── src/
         │   ├── components/       <- H1–H42 path charts, 5x5 matrix, distribution tables

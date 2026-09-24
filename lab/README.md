@@ -1,5 +1,7 @@
 # Macroeconomic News & FX H1 Post-Release Research Workstation
 
+> **Scope note:** This README describes the existing H1 application, not the present FMS registered-setup protocol. See the [current roadmap](../docs/FMS_RESEARCH_ROADMAP.md), [Phase 1 report](research/PHASE1_EXPLORATION.md), and [timestamp-only FMS inventory](research/FMS_ELIGIBILITY_INVENTORY.md). Historical counts in this README are not current research eligibility or evidence of profitability.
+
 A high-performance quantitative research workstation built in TypeScript to investigate how major FX currencies behave after scheduled macroeconomic announcements across **1 to 42 H1 trading bars**.
 
 ---
@@ -86,7 +88,7 @@ The validated export indexes 123,054 calendar records and 1,686,617 completed H1
 ```bash
 npm test
 ```
-Runs 70 unit and end-to-end integration tests, including deterministic v3.1 revision/CSV fixtures and real-data audits.
+Runs the unit and integration tests, including deterministic v3.1 revision/CSV fixtures and real-data audits. Use the command output for the current test count.
 
 ### Step 4: Run Development Mode
 To run the backend server and Vite dev server:

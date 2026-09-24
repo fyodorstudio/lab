@@ -1,4 +1,8 @@
-# Research parking lot — post-release magnitude / volatility
+# Research notes — current direction and parked ideas
+
+The current decision record and grand-plan map live in [docs/FMS_RESEARCH_ROADMAP.md](docs/FMS_RESEARCH_ROADMAP.md). The owner is open to first- or second-trading-day moves **and** longer positions; 42–60 H4 candles describe past holding behavior, not a required or privileged test horizon. The timestamp-only eligibility inventory is complete, but no FMS demo candidate has been registered. The sections below preserve the earlier proposals and cautions; they do not override a later frozen protocol.
+
+## Parked proposal: post-release magnitude / volatility
 
 Recorded 2026-09-24. This is a preserved research proposal, **not** an approved trading setup, a modification to the frozen Phase 1 protocol, or permission to open its sealed 2023+ confirmation outcomes.
 

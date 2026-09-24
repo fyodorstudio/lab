@@ -7,6 +7,7 @@
   "scripts": {
     "ingest": "tsx src/cli/ingest.ts",
     "audit:quant": "tsx src/cli/quantAudit.ts",
+    "inventory:fms": "tsx src/research/runFmsInventory.ts",
     "index": "tsx src/cli/ingest.ts",
     "server": "tsx src/server/server.ts",
     "dev:server": "tsx watch src/server/server.ts",
