@@ -1,6 +1,6 @@
 # Macroeconomic Post-Release Quantitative Workstation
 
-A macroeconomic quantitative research workstation for investigating post-release FX market reaction dynamics across 1–42 H1 trading horizons following scheduled economic events. See [`CODEX_QUANT_AUDIT.md`](CODEX_QUANT_AUDIT.md) before drawing research conclusions.
+A macroeconomic quantitative research workstation for investigating post-release FX market reaction dynamics across 1–42 H1 trading horizons following scheduled economic events. See [`CODEX_QUANT_AUDIT.md`](docs/CODEX_QUANT_AUDIT.md) before drawing research conclusions.
 
 ---
 

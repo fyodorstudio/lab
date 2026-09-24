@@ -10,7 +10,7 @@ The workstation answers the central empirical research question:
 > *"When a specific economic event produces a specific Actual-vs-Forecast ($S_{\text{delta}}$) and Actual-vs-Previous ($M_{\text{delta}}$) result, how does the affected currency tend to behave over the following 1–42 H1 trading bars?"*
 
 Key Capabilities:
-- **Descriptive & Forensic**: Reproducible from the raw files on disk, subject to the provenance limitations documented in `CODEX_QUANT_AUDIT.md`.
+- **Descriptive & Forensic**: Reproducible from the raw files on disk, subject to the provenance limitations documented in [`CODEX_QUANT_AUDIT.md`](../docs/CODEX_QUANT_AUDIT.md).
 - **Relative Magnitude Scoring**: Evaluates surprise and momentum deltas against the historical distribution of the exact event using empirical percentiles (e.g., P75).
 - **Contamination-Free H1 Alignment**: Anchors price measurement at $P_0$ (the open of the first complete H1 candle beginning at or after announcement timestamp), preventing pre-announcement contamination.
 - **Directional Normalization**: Multiplies returns by $Q = +1$ (base) or $Q = -1$ (quote) so positive normalized returns always signify currency appreciation.

@@ -1,0 +1,69 @@
+The engineering/audit phase is complete enough. I now want to begin the actual quantitative research this project was built for.
+
+Please first re-read the current repo, the latest audit/report, and the research/literature file so you understand the methodology and data before doing analysis.
+
+My core conjecture is:
+
+Scheduled macroeconomic releases may produce statistically repeatable and persistent FX price behavior beyond the immediate announcement shock, especially when the release is unusually surprising relative to expectations and/or meaningfully different from the previous reading.
+
+I am specifically interested in persistence over subsequent complete H1 bars — hours to potentially multiple trading days — not seconds/minutes or news scalping.
+
+Use the existing audited concepts of:
+
+- Actual vs Forecast surprise
+- Actual vs Previous momentum
+- walk-forward percentile classification
+- exact event-series identity
+- normalized event-currency returns
+- complete post-release H1 alignment
+
+Do not assume the conjecture is true. Try to falsify it.
+
+Start with cleaner, well-identified macro series and avoid unresolved/ambiguous series where appropriate.
+
+Most importantly, design the research so we do not fool ourselves through data mining.
+
+Before searching for patterns, establish an outcome-blind chronological Exploration vs Confirmation split. Use the Exploration period to understand event-response behavior and identify a small number of scientifically interesting candidate hypotheses. Freeze any candidate's rules before opening the Confirmation period.
+
+Investigate questions such as:
+
+- Do large macro surprises show persistent directionality after the first complete H1 candle?
+- Does agreement between Surprise and Momentum matter?
+- Do aligned +/+ or -/- states behave differently from contradictory states?
+- Which event types show persistence, reversal, delayed response, or no effect?
+- How stable are apparent effects across time, nearby horizons, simultaneous-release controls, and different FX pair representations?
+- Are results visible in medians and individual-event behavior, or only in means driven by outliers?
+
+Do not search thousands of combinations and simply return the best-performing one.
+
+Account for multiple-testing / researcher-degrees-of-freedom risk.
+
+Treat different FX pairs from the same underlying macro release carefully because they are not independent observations.
+
+Report negative and inconclusive findings as seriously as positive ones.
+
+The immediate objective is NOT to build a profitable trading strategy.
+
+The objective is to answer:
+
+“Does the historical data contain robust evidence of repeatable post-macroeconomic-release FX behavior that is strong and stable enough to justify a preregistered forward experiment?”
+
+Produce a clear research report with:
+
+1. methodology and Exploration/Confirmation split;
+2. descriptive event-response findings;
+3. strongest candidate phenomena and their weaknesses;
+4. failed or unsupported hypotheses;
+5. robustness / overfitting analysis;
+6. confirmation results for any preregistered candidates;
+7. a small number of frozen setup specifications suitable for future demo-account forward testing, but only if the evidence genuinely warrants them.
+
+Use the existing application/data where possible and create additional research scripts/artifacts only where useful.
+
+Do not manufacture an edge.
+
+Do not optimize for attractive results.
+
+If the conjecture is unsupported, say so clearly.
+
+The goal is trustworthy evidence, not proof of what I hope is true.

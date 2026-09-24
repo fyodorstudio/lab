@@ -5,7 +5,8 @@ Audited commit: `a83a39f4180d698fb285368daebea5ea0c76e555`
 Selected calendar SHA-256: `76062b8f6747d38b530d086780f2dfcf0b0bde59690bfdf4458c7519d4e6be2e`  
 Selected export tree SHA-256: `83eba32af0e1acd2e0c65ee983c11023591f55fd140ee4cd4fe2a0ec39832ffe`  
 Selected export: `FyodorResearchExport_v3_20260923_234930_server` (`fyodor-mt5-research-export/3.1.0`)  
-Machine evidence: [`lab/audit_exports/codex_quant_audit.json`](lab/audit_exports/codex_quant_audit.json)  
+Machine evidence: [`lab/audit_exports/codex_quant_audit.json`](../lab/audit_exports/codex_quant_audit.json)
+
 Reproduction command: `cd lab && npm run audit:quant`
 
 ## 1. Executive summary
@@ -248,7 +249,7 @@ Conclusion: **VERIFIED** for absence of future percentile leakage within the sel
 
 The legacy audit artifacts were generated from the old display-name grouping and UTC labeling. Their EUR PMI N=708 and related thresholds are invalid for an exact Eurozone revision series. They are currently absent from the working tree and were not restored by this migration.
 
-Spot checks did not reproduce the allegation that the old Markdown and JSON disagreed on the selected CPI/PMI case fields; rather, both shared the same upstream identity error. They are superseded by [`lab/audit_exports/codex_quant_audit.json`](lab/audit_exports/codex_quant_audit.json), which contains independent recomputation and engine comparisons against v3.1.
+Spot checks did not reproduce the allegation that the old Markdown and JSON disagreed on the selected CPI/PMI case fields; rather, both shared the same upstream identity error. They are superseded by [`lab/audit_exports/codex_quant_audit.json`](../lab/audit_exports/codex_quant_audit.json), which contains independent recomputation and engine comparisons against v3.1.
 
 The machine artifact records the raw file hash, PMI before/after counts, all 51 candle integrity summaries, external cross-check classifications, and seven real observations.
 
